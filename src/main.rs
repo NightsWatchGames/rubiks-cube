@@ -30,56 +30,56 @@ fn setup(
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..default()
     }).insert(CenterCube);
-    // commands.spawn(PbrBundle {
-    //     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-    //     material: materials.add(Color::GREEN.into()),
-    //     transform: Transform::from_xyz(1.0, 0.0, 0.0),
-    //     ..default()
-    // });
-    // commands.spawn(PbrBundle {
-    //     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-    //     material: materials.add(Color::YELLOW.into()),
-    //     transform: Transform::from_xyz(-1.0, 0.0, 0.0),
-    //     ..default()
-    // });
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        material: materials.add(Color::GREEN.into()),
+        transform: Transform::from_xyz(1.0, 0.0, 0.0),
+        ..default()
+    }).insert(Cube);
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        material: materials.add(Color::YELLOW.into()),
+        transform: Transform::from_xyz(-1.0, 0.0, 0.0),
+        ..default()
+    }).insert(Cube);
 
-    // commands.spawn(PbrBundle {
-    //     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-    //     material: materials.add(Color::BLUE.into()),
-    //     transform: Transform::from_xyz(0.0, 0.0, 1.0),
-    //     ..default()
-    // });
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        material: materials.add(Color::BLUE.into()),
+        transform: Transform::from_xyz(0.0, 0.0, 1.0),
+        ..default()
+    }).insert(Cube);
     commands.spawn(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
         material: materials.add(Color::CYAN.into()),
         transform: Transform::from_xyz(1.0, 0.0, 1.0),
         ..default()
     }).insert(Cube);
-    // commands.spawn(PbrBundle {
-    //     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-    //     material: materials.add(Color::FUCHSIA.into()),
-    //     transform: Transform::from_xyz(-1.0, 0.0, 1.0),
-    //     ..default()
-    // });
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        material: materials.add(Color::FUCHSIA.into()),
+        transform: Transform::from_xyz(-1.0, 0.0, 1.0),
+        ..default()
+    }).insert(Cube);
 
-    // commands.spawn(PbrBundle {
-    //     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-    //     material: materials.add(Color::ALICE_BLUE.into()),
-    //     transform: Transform::from_xyz(0.0, 0.0, -1.0),
-    //     ..default()
-    // });
-    // commands.spawn(PbrBundle {
-    //     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-    //     material: materials.add(Color::ANTIQUE_WHITE.into()),
-    //     transform: Transform::from_xyz(1.0, 0.0, -1.0),
-    //     ..default()
-    // });
-    // commands.spawn(PbrBundle {
-    //     mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-    //     material: materials.add(Color::BEIGE.into()),
-    //     transform: Transform::from_xyz(-1.0, 0.0, -1.0),
-    //     ..default()
-    // }).insert(Cube);
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        material: materials.add(Color::ALICE_BLUE.into()),
+        transform: Transform::from_xyz(0.0, 0.0, -1.0),
+        ..default()
+    }).insert(Cube);
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        material: materials.add(Color::ANTIQUE_WHITE.into()),
+        transform: Transform::from_xyz(1.0, 0.0, -1.0),
+        ..default()
+    }).insert(Cube);
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        material: materials.add(Color::BEIGE.into()),
+        transform: Transform::from_xyz(-1.0, 0.0, -1.0),
+        ..default()
+    }).insert(Cube);
 
     // camera
     commands.spawn(Camera3dBundle {
