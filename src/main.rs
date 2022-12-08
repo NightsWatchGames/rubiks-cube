@@ -1,18 +1,19 @@
+use std::f32::consts::TAU;
+
 use bevy::prelude::*;
 use bevy::time::FixedTimestep;
 
-const TIME_STEP: f32 = 1.0 / 120.0;
+use bevy::transform::TransformSystem::TransformPropagate;
+
+const TIME_STEP: f32 = 1.0 / 20.0;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
-        .add_system_set(
-            SystemSet::new()
-                .with_run_criteria(FixedTimestep::step(TIME_STEP as f64))
-                .with_system(move_cube)
-                .with_system(rotate_cube.after(move_cube))
-        )
+        .add_system_to_stage(CoreStage::PreUpdate, establish_hierarchy)
+        .add_system_to_stage(CoreStage::Update, rotate_cube)
+        .add_system_to_stage(CoreStage::PostUpdate, clear_hierarchy.after(TransformPropagate))
         .run();
 }
 
@@ -131,51 +132,21 @@ fn setup(
     });
 }
 
-// 绕圆点运动
-fn move_cube(mut cubes: Query<&mut Transform, With<Cube>>, timer: Res<Time>) {
-    for mut transform in &mut cubes {
-        dbg!(transform.translation);
-        // 计算圆半径
-        let r = transform.translation.distance(Vec3::splat(0.0));
-        dbg!(r);
-        let old_sin = transform.translation.x / r;
-        // 每帧绕圆点走一定的角度
-        let (sin_delta, cos_delta) = (1.0 * TIME_STEP).sin_cos();
-        dbg!(sin_delta);
-        dbg!(cos_delta);
-        // sin(a+b) = sin(a)cos(b) + cos(a)sin(b)
-        let new_sin =
-            (transform.translation.x / r) * cos_delta + (transform.translation.z / r) * sin_delta;
-        dbg!(new_sin);
-
-        transform.translation.x = new_sin * r;
-        transform.translation.y = 0.0;
-        if new_sin >= 0.0 && new_sin > old_sin {
-            // sin为正且递增
-            println!("第一象限");
-            transform.translation.z = (r.powi(2) - transform.translation.x.powi(2)).sqrt();
-        } else if new_sin >= 0.0 && new_sin < old_sin {
-            // sin为正且递减
-            println!("第二象限");
-            transform.translation.z = -(r.powi(2) - transform.translation.x.powi(2)).sqrt();
-        } else if new_sin < 0.0 && new_sin < old_sin {
-            // sin为负且递减
-            println!("第三象限");
-            transform.translation.z = -(r.powi(2) - transform.translation.x.powi(2)).sqrt();
-        } else if new_sin < 0.0 && new_sin > old_sin {
-            // sin为负且递增
-            println!("第四象限");
-            transform.translation.z = (r.powi(2) - transform.translation.x.powi(2)).sqrt();
-        }
+fn establish_hierarchy(mut commands: Commands, cubes: Query<Entity, With<Cube>>, center: Query<Entity, With<CenterCube>>) {
+    // 组建父子关系
+    for cube_entity in &cubes {
+        commands.entity(center.single()).add_child(cube_entity);
     }
 }
 
-fn rotate_cube(mut cubes: Query<(&mut Transform, &FixedLookingAtCenter), With<Cube>>) {
-    let center = Vec3::splat(0.0);
-    for (mut transform, fixed_looking_at_center) in &mut cubes {
-        // 与中心点保持固定的角度
-        transform.look_at(center, Vec3::Y);
-        let fixed_looking_at_center = fixed_looking_at_center.0;
-        transform.rotate_local(fixed_looking_at_center.rotation);
+fn clear_hierarchy(mut commands: Commands, cubes: Query<Entity, With<Cube>>) {
+    // 清除父子关系
+    for cube_entity in &cubes {
+        commands.entity(cube_entity).remove_parent();
     }
+}
+
+fn rotate_cube(mut center: Query<&mut Transform, With<CenterCube>>, time: Res<Time>) {
+    // 旋转父物体
+    center.single_mut().rotate_y(0.3 * TAU * time.delta_seconds());
 }
