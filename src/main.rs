@@ -7,17 +7,9 @@ use cube::*;
 use debug::*;
 use scramble::*;
 
-use crate::scramble::Axis;
-
 mod cube;
 mod debug;
 mod scramble;
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, StageLabel)]
-enum GameStage {
-    ChooseCubes,
-    Cleanup,
-}
 
 fn main() {
     App::new()
@@ -29,18 +21,8 @@ fn main() {
             Duration::from_secs(1),
             TimerMode::Repeating,
         )))
-        // 自定义stage
-        .add_stage_before(
-            CoreStage::Update,
-            GameStage::ChooseCubes,
-            SystemStage::parallel(),
-        )
-        .add_stage_after(
-            CoreStage::PostUpdate,
-            GameStage::Cleanup,
-            SystemStage::parallel(),
-        )
         .add_system_to_stage(CoreStage::PreUpdate, choose_cubes_from_side_move_event)
+
         .add_system_to_stage(
             CoreStage::Update,
             debug_print_transform_before_rotated.before(rotate_cube),
@@ -50,12 +32,16 @@ fn main() {
             CoreStage::Update,
             debug_print_transform_after_rotated.after(rotate_cube),
         )
+
         .add_system_to_stage(
             CoreStage::PostUpdate,
             translation_round.after(bevy::transform::TransformSystem::TransformPropagate),
         )
-        .add_system_to_stage(GameStage::Cleanup, cleanup_center)
-        .add_system_to_stage(GameStage::Cleanup, cleanup_movable_cubes)
+        .add_system_to_stage(
+            CoreStage::PostUpdate,
+            cleanup_movable_cubes.after(translation_round),
+        )
+
         .add_system(debug_random_side_move_event)
         .run();
 }
@@ -113,12 +99,6 @@ fn setup(
         transform: Transform::from_xyz(10.0, 10.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
-}
-
-fn cleanup_center(mut commands: Commands, center: Query<Entity, With<Center>>) {
-    for entity in &center {
-        commands.entity(entity).remove::<Center>();
-    }
 }
 
 fn cleanup_movable_cubes(mut commands: Commands, movable_cubes: Query<Entity, With<MovableCube>>) {

@@ -8,20 +8,6 @@ use rand::Rng;
 #[derive(Resource)]
 pub struct DebugRandomTimer(pub Timer);
 
-pub fn debug_random_layer(mut commands: Commands, cubes: Query<(Entity, &mut Transform)>) {
-    let layers = vec![-1.0f32, 0.0, 1.0];
-    let choice = layers.choose(&mut rand::thread_rng()).unwrap().clone();
-    for (entity, transform) in &cubes {
-        if transform.translation.y == choice {
-            if transform.translation.x == 0.0 && transform.translation.z == 0.0 {
-                commands.entity(entity).insert(Center);
-            } else {
-                commands.entity(entity).insert(MovableCube);
-            }
-        }
-    }
-}
-
 pub fn debug_random_side_move_event(
     mut side_move_event: EventWriter<SideMoveEvent>,
     mut timer: ResMut<DebugRandomTimer>,
