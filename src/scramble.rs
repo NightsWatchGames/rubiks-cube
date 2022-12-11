@@ -30,25 +30,26 @@ pub struct SideMoveEvent {
 
 pub fn choose_cubes_from_side_move_event(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut Transform), With<Cube>>,
+    mut query: Query<(Entity, &Transform), With<Cube>>,
     mut side_move_event: EventReader<SideMoveEvent>,
 ) {
     for event in side_move_event.iter() {
         dbg!(event);
         for (_, transform) in &query {
-            info!("before choosing, cube translation={}", transform.translation);
+            info!(
+                "before choosing, cube translation={}",
+                transform.translation
+            );
         }
         let side = event.side;
         match side.0 {
             Axis::X => {
-                for (entity, mut transform) in &mut query {
+                for (entity, transform) in &mut query {
                     if transform.translation.x == side.1 {
                         if transform.translation.y == 0.0 && transform.translation.z == 0.0 {
                             info!("insert center: translation={}", transform.translation);
                             commands.entity(entity).insert(Center);
                         } else {
-                            // transform为相对parent的位置
-                            transform.translation.x = 0.0;
                             info!("insert movable cube: translation={}", transform.translation);
                             commands.entity(entity).insert(MovableCube);
                         }
@@ -56,13 +57,12 @@ pub fn choose_cubes_from_side_move_event(
                 }
             }
             Axis::Y => {
-                for (entity, mut transform) in &mut query {
+                for (entity, transform) in &mut query {
                     if transform.translation.y == side.1 {
                         if transform.translation.x == 0.0 && transform.translation.z == 0.0 {
                             info!("insert center: translation={}", transform.translation);
                             commands.entity(entity).insert(Center);
                         } else {
-                            transform.translation.y = 0.0;
                             info!("insert movable cube: translation={}", transform.translation);
                             commands.entity(entity).insert(MovableCube);
                         }
@@ -70,13 +70,12 @@ pub fn choose_cubes_from_side_move_event(
                 }
             }
             Axis::Z => {
-                for (entity, mut transform) in &mut query {
+                for (entity, transform) in &mut query {
                     if transform.translation.z == side.1 {
                         if transform.translation.x == 0.0 && transform.translation.y == 0.0 {
                             info!("insert center: translation={}", transform.translation);
                             commands.entity(entity).insert(Center);
                         } else {
-                            transform.translation.z = 0.0;
                             info!("insert movable cube: translation={}", transform.translation);
                             commands.entity(entity).insert(MovableCube);
                         }
@@ -88,80 +87,141 @@ pub fn choose_cubes_from_side_move_event(
 }
 
 pub fn rotate_cube(
-    mut center: Query<(&mut Transform, &GlobalTransform), Added<Center>>,
+    mut center: Query<(&Transform, &GlobalTransform), Added<Center>>,
+    mut movable_cubes: Query<&mut Transform, (Without<Center>, With<MovableCube>)>,
     mut side_move_event: EventReader<SideMoveEvent>,
 ) {
-    for (mut center, global_transform) in &mut center {
+    for (center, global_transform) in &mut center {
         for event in side_move_event.iter() {
-            info!("rotate - center transform={}, global transform={} event={:?}", center.translation, global_transform.translation(), event);
-            // 旋转父物体
-            match event.rotate {
-                SideRotation::Clockwise90 => match event.side.0 {
-                    Axis::X => {
-                        center.rotate_x(FRAC_PI_2);
-                    }
-                    Axis::Y => {
-                        center.rotate_y(FRAC_PI_2);
-                    }
-                    Axis::Z => {
-                        center.rotate_z(FRAC_PI_2);
-                    }
-                },
-                SideRotation::Clockwise180 => match event.side.0 {
-                    Axis::X => {
-                        center.rotate_x(PI);
-                    }
-                    Axis::Y => {
-                        center.rotate_y(PI);
-                    }
-                    Axis::Z => {
-                        center.rotate_z(PI);
-                    }
-                },
-                SideRotation::Clockwise270 => match event.side.0 {
-                    Axis::X => {
-                        center.rotate_x(3.0 * PI / 2.0);
-                    }
-                    Axis::Y => {
-                        center.rotate_y(3.0 * PI / 2.0);
-                    }
-                    Axis::Z => {
-                        center.rotate_z(3.0 * PI / 2.0);
-                    }
-                },
-                SideRotation::Counterclockwise90 => match event.side.0 {
-                    Axis::X => {
-                        center.rotate_x(-FRAC_PI_2);
-                    }
-                    Axis::Y => {
-                        center.rotate_y(-FRAC_PI_2);
-                    }
-                    Axis::Z => {
-                        center.rotate_z(-FRAC_PI_2);
-                    }
-                },
-                SideRotation::Counterclockwise180 => match event.side.0 {
-                    Axis::X => {
-                        center.rotate_x(-PI);
-                    }
-                    Axis::Y => {
-                        center.rotate_y(-PI);
-                    }
-                    Axis::Z => {
-                        center.rotate_z(-PI);
-                    }
-                },
-                SideRotation::Counterclockwise270 => match event.side.0 {
-                    Axis::X => {
-                        center.rotate_x(-3.0 * PI / 2.0);
-                    }
-                    Axis::Y => {
-                        center.rotate_y(-3.0 * PI / 2.0);
-                    }
-                    Axis::Z => {
-                        center.rotate_z(-3.0 * PI / 2.0);
-                    }
-                },
+            info!(
+                "rotate - center transform={}, global transform={} event={:?}",
+                center.translation,
+                global_transform.translation(),
+                event
+            );
+            for mut movable_cube in &mut movable_cubes {
+                match event.rotate {
+                    SideRotation::Clockwise90 => match event.side.0 {
+                        Axis::X => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::X, FRAC_PI_2),
+                            );
+                        }
+                        Axis::Y => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Y, FRAC_PI_2),
+                            );
+                        }
+                        Axis::Z => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Z, FRAC_PI_2),
+                            );
+                        }
+                    },
+                    SideRotation::Clockwise180 => match event.side.0 {
+                        Axis::X => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::X, PI),
+                            );
+                        }
+                        Axis::Y => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Y, PI),
+                            );
+                        }
+                        Axis::Z => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Z, PI),
+                            );
+                        }
+                    },
+                    SideRotation::Clockwise270 => match event.side.0 {
+                        Axis::X => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::X, 3.0 * PI / 2.0),
+                            );
+                        }
+                        Axis::Y => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Y, 3.0 * PI / 2.0),
+                            );
+                        }
+                        Axis::Z => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Z, 3.0 * PI / 2.0),
+                            );
+                        }
+                    },
+                    SideRotation::Counterclockwise90 => match event.side.0 {
+                        Axis::X => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::X, -FRAC_PI_2),
+                            );
+                        }
+                        Axis::Y => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Y, -FRAC_PI_2),
+                            );
+                        }
+                        Axis::Z => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Z, -FRAC_PI_2),
+                            );
+                        }
+                    },
+                    SideRotation::Counterclockwise180 => match event.side.0 {
+                        Axis::X => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::X, -PI),
+                            );
+                        }
+                        Axis::Y => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Y, -PI),
+                            );
+                        }
+                        Axis::Z => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Z, -PI),
+                            );
+                        }
+                    },
+                    SideRotation::Counterclockwise270 => match event.side.0 {
+                        Axis::X => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::X, -3.0 * PI / 2.0),
+                            );
+                        }
+                        Axis::Y => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Y, -3.0 * PI / 2.0),
+                            );
+                        }
+                        Axis::Z => {
+                            movable_cube.rotate_around(
+                                center.translation,
+                                Quat::from_axis_angle(Vec3::Z, -3.0 * PI / 2.0),
+                            );
+                        }
+                    },
+                }
             }
         }
     }

@@ -39,7 +39,7 @@ pub fn debug_random_side_move_event(
             2 => scramble::Axis::Z,
             _ => scramble::Axis::X,
         };
-        // let axis = scramble::Axis::Y;
+        // let axis = scramble::Axis::Z;
         let rotate = match rand::thread_rng().gen_range(0..6) {
             0 => SideRotation::Clockwise90,
             1 => SideRotation::Clockwise180,
@@ -61,7 +61,10 @@ pub fn debug_random_color() -> Color {
     Color::rgb(rng.gen(), rng.gen(), rng.gen())
 }
 
-pub fn debug_print_global_transform(query: Query<&GlobalTransform, With<Cube>>, mut side_move_event: EventReader<SideMoveEvent>) {
+pub fn debug_print_global_transform(
+    query: Query<&GlobalTransform, With<Cube>>,
+    mut side_move_event: EventReader<SideMoveEvent>,
+) {
     for event in side_move_event.iter() {
         for global_transform in &query {
             info!("cube global transform {}", global_transform.translation());
@@ -69,13 +72,27 @@ pub fn debug_print_global_transform(query: Query<&GlobalTransform, With<Cube>>, 
     }
 }
 
-pub fn debug_print_transform_before_rotated(query: Query<(Entity, &Transform, &GlobalTransform), With<MovableCube>>) {
-    for (entity, transform, global_transform ) in &query {
-        info!("before rotated - cube={:?}, transform={}, global transform={}", entity, transform.translation, global_transform.translation());
+pub fn debug_print_transform_before_rotated(
+    query: Query<(Entity, &Transform, &GlobalTransform), With<MovableCube>>,
+) {
+    for (entity, transform, global_transform) in &query {
+        info!(
+            "before rotated - cube={:?}, transform={}, global transform={}",
+            entity,
+            transform.translation,
+            global_transform.translation()
+        );
     }
 }
-pub fn debug_print_transform_after_rotated(query: Query<(Entity, &Transform, &GlobalTransform), With<MovableCube>>) {
+pub fn debug_print_transform_after_rotated(
+    query: Query<(Entity, &Transform, &GlobalTransform), With<MovableCube>>,
+) {
     for (entity, transform, global_transform) in &query {
-        info!("after rotated - cube={:?}, transform={}, global transform={}", entity, transform.translation, global_transform.translation());
+        info!(
+            "after rotated - cube={:?}, transform={}, global transform={}",
+            entity,
+            transform.translation,
+            global_transform.translation()
+        );
     }
 }
