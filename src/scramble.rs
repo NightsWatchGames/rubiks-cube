@@ -28,9 +28,9 @@ pub struct SideMoveEvent {
     pub rotate: SideRotation,
 }
 
-pub fn choose_cubes_from_side_move_event(
+pub fn choose_pieces_from_side_move_event(
     mut commands: Commands,
-    mut query: Query<(Entity, &Transform), With<Cube>>,
+    mut query: Query<(Entity, &Transform), With<Piece>>,
     mut side_move_event: EventReader<SideMoveEvent>,
 ) {
     for event in side_move_event.iter() {
@@ -47,7 +47,7 @@ pub fn choose_cubes_from_side_move_event(
                 for (entity, transform) in &mut query {
                     if transform.translation.x == side.1 {
                         info!("insert movable cube: translation={}", transform.translation);
-                        commands.entity(entity).insert(MovableCube {
+                        commands.entity(entity).insert(MovablePiece {
                             axis: Axis::X,
                             rotate: event.rotate,
                         });
@@ -58,7 +58,7 @@ pub fn choose_cubes_from_side_move_event(
                 for (entity, transform) in &mut query {
                     if transform.translation.y == side.1 {
                         info!("insert movable cube: translation={}", transform.translation);
-                        commands.entity(entity).insert(MovableCube {
+                        commands.entity(entity).insert(MovablePiece {
                             axis: Axis::Y,
                             rotate: event.rotate,
                         });
@@ -69,7 +69,7 @@ pub fn choose_cubes_from_side_move_event(
                 for (entity, transform) in &mut query {
                     if transform.translation.z == side.1 {
                         info!("insert movable cube: translation={}", transform.translation);
-                        commands.entity(entity).insert(MovableCube {
+                        commands.entity(entity).insert(MovablePiece {
                             axis: Axis::Z,
                             rotate: event.rotate,
                         });
@@ -80,82 +80,22 @@ pub fn choose_cubes_from_side_move_event(
     }
 }
 
-pub fn rotate_cube(mut movable_cubes: Query<(&MovableCube, &mut Transform)>) {
-    for (movable_cube, mut transform) in &mut movable_cubes {
-        info!("rotate - movable cube={:?}, transform={}", &movable_cube, transform.translation);
-        match movable_cube.rotate {
-            SideRotation::Clockwise90 => match movable_cube.axis {
-                Axis::X => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::X, FRAC_PI_2));
-                }
-                Axis::Y => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Y, FRAC_PI_2));
-                }
-                Axis::Z => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Z, FRAC_PI_2));
-                }
-            },
-            SideRotation::Clockwise180 => match movable_cube.axis {
-                Axis::X => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::X, PI));
-                }
-                Axis::Y => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Y, PI));
-                }
-                Axis::Z => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Z, PI));
-                }
-            },
-            SideRotation::Clockwise270 => match movable_cube.axis {
-                Axis::X => {
-                    transform
-                        .rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::X, 3.0 * PI / 2.0));
-                }
-                Axis::Y => {
-                    transform
-                        .rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Y, 3.0 * PI / 2.0));
-                }
-                Axis::Z => {
-                    transform
-                        .rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Z, 3.0 * PI / 2.0));
-                }
-            },
-            SideRotation::Counterclockwise90 => match movable_cube.axis {
-                Axis::X => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::X, -FRAC_PI_2));
-                }
-                Axis::Y => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Y, -FRAC_PI_2));
-                }
-                Axis::Z => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Z, -FRAC_PI_2));
-                }
-            },
-            SideRotation::Counterclockwise180 => match movable_cube.axis {
-                Axis::X => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::X, -PI));
-                }
-                Axis::Y => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Y, -PI));
-                }
-                Axis::Z => {
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Z, -PI));
-                }
-            },
-            SideRotation::Counterclockwise270 => match movable_cube.axis {
-                Axis::X => {
-                    transform
-                        .rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::X, -3.0 * PI / 2.0));
-                }
-                Axis::Y => {
-                    transform
-                        .rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Y, -3.0 * PI / 2.0));
-                }
-                Axis::Z => {
-                    transform
-                        .rotate_around(Vec3::ZERO, Quat::from_axis_angle(Vec3::Z, -3.0 * PI / 2.0));
-                }
-            },
-        }
+pub fn rotate_cube(mut movable_pieces: Query<(&MovablePiece, &mut Transform)>) {
+    for (movable_piece, mut transform) in &mut movable_pieces {
+        info!("rotate - movable cube={:?}, transform={}", &movable_piece, transform.translation);
+        let axis = match movable_piece.axis {
+            Axis::X => { Vec3::X }
+            Axis::Y => { Vec3::Y }
+            Axis::Z => { Vec3::Z }
+        };
+        let angle = match movable_piece.rotate {
+            SideRotation::Clockwise90 => { FRAC_PI_2 }
+            SideRotation::Clockwise180 => { PI }
+            SideRotation::Clockwise270 => { 3.0 * PI / 2.0 }
+            SideRotation::Counterclockwise90 => { -FRAC_PI_2 }
+            SideRotation::Counterclockwise180 => { -PI }
+            SideRotation::Counterclockwise270 => { -3.0 * PI / 2.0 }
+        };
+        transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(axis, angle));
     }
 }

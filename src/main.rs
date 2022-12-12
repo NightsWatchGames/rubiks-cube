@@ -21,7 +21,7 @@ fn main() {
             Duration::from_secs(1),
             TimerMode::Repeating,
         )))
-        .add_system_to_stage(CoreStage::PreUpdate, choose_cubes_from_side_move_event)
+        .add_system_to_stage(CoreStage::PreUpdate, choose_pieces_from_side_move_event)
 
         .add_system_to_stage(
             CoreStage::Update,
@@ -35,11 +35,11 @@ fn main() {
 
         .add_system_to_stage(
             CoreStage::PostUpdate,
-            translation_round.after(bevy::transform::TransformSystem::TransformPropagate),
+            piece_translation_round.after(bevy::transform::TransformSystem::TransformPropagate),
         )
         .add_system_to_stage(
             CoreStage::PostUpdate,
-            cleanup_movable_cubes.after(translation_round),
+            cleanup_movable_pieces.after(piece_translation_round),
         )
 
         .add_system(debug_random_side_move_event)
@@ -62,7 +62,7 @@ fn setup(
                     transform: Transform::from_translation(Vec3::new(x, y, z)),
                     ..default()
                 })
-                .insert(Cube);
+                .insert(Piece);
         }
     }
 
@@ -76,7 +76,7 @@ fn setup(
                     transform: Transform::from_translation(Vec3::new(x, y, z)),
                     ..default()
                 })
-                .insert(Cube);
+                .insert(Piece);
         }
     }
 
@@ -90,7 +90,7 @@ fn setup(
                     transform: Transform::from_translation(Vec3::new(x, y, z)),
                     ..default()
                 })
-                .insert(Cube);
+                .insert(Piece);
         }
     }
 
@@ -101,15 +101,15 @@ fn setup(
     });
 }
 
-fn cleanup_movable_cubes(mut commands: Commands, movable_cubes: Query<Entity, With<MovableCube>>) {
-    for entity in &movable_cubes {
-        commands.entity(entity).remove::<MovableCube>();
+fn cleanup_movable_pieces(mut commands: Commands, movable_pieces: Query<Entity, With<MovablePiece>>) {
+    for entity in &movable_pieces {
+        commands.entity(entity).remove::<MovablePiece>();
     }
 }
 
 // 纠正旋转后的坐标值误差
-fn translation_round(mut movable_cubes: Query<&mut Transform, With<MovableCube>>) {
-    for mut transform in &mut movable_cubes {
+fn piece_translation_round(mut movable_pieces: Query<&mut Transform, With<MovablePiece>>) {
+    for mut transform in &mut movable_pieces {
         transform.translation.x = transform.translation.x.round();
         transform.translation.y = transform.translation.y.round();
         transform.translation.z = transform.translation.z.round();

@@ -48,7 +48,7 @@ pub fn debug_random_color() -> Color {
 }
 
 pub fn debug_print_global_transform(
-    query: Query<&GlobalTransform, With<Cube>>,
+    query: Query<&GlobalTransform, With<Piece>>,
     mut side_move_event: EventReader<SideMoveEvent>,
 ) {
     for event in side_move_event.iter() {
@@ -59,7 +59,7 @@ pub fn debug_print_global_transform(
 }
 
 pub fn debug_print_transform_before_rotated(
-    query: Query<(Entity, &Transform, &GlobalTransform), With<MovableCube>>,
+    query: Query<(Entity, &Transform, &GlobalTransform), With<MovablePiece>>,
 ) {
     for (entity, transform, global_transform) in &query {
         info!(
@@ -71,7 +71,7 @@ pub fn debug_print_transform_before_rotated(
     }
 }
 pub fn debug_print_transform_after_rotated(
-    query: Query<(Entity, &Transform, &GlobalTransform), With<MovableCube>>,
+    query: Query<(Entity, &Transform, &GlobalTransform), With<MovablePiece>>,
 ) {
     for (entity, transform, global_transform) in &query {
         info!(
