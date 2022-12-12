@@ -1,10 +1,11 @@
 use bevy::prelude::*;
-use crate::scramble::{*, self};
+use crate::moving::{*, self};
 
 #[derive(Debug, Component)]
 pub struct MovablePiece {
-    pub axis: scramble::Axis,
+    pub axis: moving::Axis,
     pub rotate: SideRotation,
+    pub left_angle: f32,
 }
 
 #[derive(Debug, Component)]
@@ -13,10 +14,12 @@ pub struct Piece;
 /// 魔方设置
 #[derive(Debug, Resource)]
 pub struct CubeSettings {
-    /// 几阶魔方
+    // 几阶魔方
     pub cube_order: u8,
-    /// 块大小
+    // 块大小
     pub piece_size: f32,
+    // 旋转速度
+    pub rotate_speed: f32,
     pub front_color: Color,
     pub back_color: Color,
     pub left_color: Color,
@@ -30,6 +33,7 @@ impl Default for CubeSettings {
         Self {
             cube_order: 3,
             piece_size: 1.0,
+            rotate_speed: 0.1,
             front_color: Color::GREEN,
             back_color: Color::BLUE,
             left_color: Color::ORANGE,

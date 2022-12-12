@@ -1,27 +1,31 @@
 use bevy::prelude::*;
 use bevy::time::FixedTimestep;
 use bevy_inspector_egui::prelude::*;
+use std::collections::VecDeque;
 use std::time::Duration;
 
 use cube::*;
 use debug::*;
 use scramble::*;
+use moving::*;
 
 mod cube;
 mod debug;
 mod scramble;
+mod moving;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WorldInspectorPlugin::new())
         .add_startup_system(setup)
-        .add_event::<SideMoveEvent>()
+        .insert_resource(CubeSettings::default())
+        .insert_resource(SideMoveQueue (VecDeque::new()))
         .insert_resource(DebugRandomTimer(Timer::new(
             Duration::from_secs(1),
             TimerMode::Repeating,
         )))
-        .add_system_to_stage(CoreStage::PreUpdate, choose_pieces_from_side_move_event)
+        .add_system_to_stage(CoreStage::PreUpdate, choose_movable_pieces)
 
         .add_system_to_stage(
             CoreStage::Update,
@@ -99,19 +103,4 @@ fn setup(
         transform: Transform::from_xyz(10.0, 10.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
-}
-
-fn cleanup_movable_pieces(mut commands: Commands, movable_pieces: Query<Entity, With<MovablePiece>>) {
-    for entity in &movable_pieces {
-        commands.entity(entity).remove::<MovablePiece>();
-    }
-}
-
-// 纠正旋转后的坐标值误差
-fn piece_translation_round(mut movable_pieces: Query<&mut Transform, With<MovablePiece>>) {
-    for mut transform in &mut movable_pieces {
-        transform.translation.x = transform.translation.x.round();
-        transform.translation.y = transform.translation.y.round();
-        transform.translation.z = transform.translation.z.round();
-    }
 }

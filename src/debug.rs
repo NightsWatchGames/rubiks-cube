@@ -1,6 +1,6 @@
 use crate::cube::*;
-use crate::scramble;
-use crate::scramble::*;
+use crate::moving;
+use crate::moving::*;
 use bevy::prelude::*;
 use rand::seq::SliceRandom;
 use rand::Rng;
@@ -9,7 +9,7 @@ use rand::Rng;
 pub struct DebugRandomTimer(pub Timer);
 
 pub fn debug_random_side_move_event(
-    mut side_move_event: EventWriter<SideMoveEvent>,
+    mut side_move_queue: ResMut<SideMoveQueue>,
     mut timer: ResMut<DebugRandomTimer>,
     time: Res<Time>,
 ) {
@@ -20,10 +20,10 @@ pub fn debug_random_side_move_event(
             .unwrap()
             .clone();
         let axis = match rand::thread_rng().gen_range(0..3) {
-            0 => scramble::Axis::X,
-            1 => scramble::Axis::Y,
-            2 => scramble::Axis::Z,
-            _ => scramble::Axis::X,
+            0 => moving::Axis::X,
+            1 => moving::Axis::Y,
+            2 => moving::Axis::Z,
+            _ => moving::Axis::X,
         };
         // let axis = scramble::Axis::Z;
         let rotate = match rand::thread_rng().gen_range(0..6) {
@@ -35,7 +35,7 @@ pub fn debug_random_side_move_event(
             5 => SideRotation::Counterclockwise270,
             _ => SideRotation::Clockwise90,
         };
-        side_move_event.send(SideMoveEvent {
+        side_move_queue.0.push_back(SideMoveEvent {
             side: (axis, axis_value),
             rotate,
         })
