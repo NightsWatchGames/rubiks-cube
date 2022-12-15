@@ -33,7 +33,7 @@ impl Default for CubeSettings {
         Self {
             cube_order: 3,
             piece_size: 1.0,
-            rotate_speed: 0.1,
+            rotate_speed: 1.0,
             front_color: Color::GREEN,
             back_color: Color::BLUE,
             left_color: Color::ORANGE,

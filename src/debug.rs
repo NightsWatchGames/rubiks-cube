@@ -25,7 +25,7 @@ pub fn debug_random_side_move_event(
             2 => moving::Axis::Z,
             _ => moving::Axis::X,
         };
-        // let axis = scramble::Axis::Z;
+        // let axis = moving::Axis::Y;
         let rotate = match rand::thread_rng().gen_range(0..6) {
             0 => SideRotation::Clockwise90,
             1 => SideRotation::Clockwise180,

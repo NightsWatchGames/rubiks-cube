@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use std::collections::VecDeque;
 use std::f32::consts::FRAC_PI_2;
 use std::f32::consts::PI;
+use std::f32::consts::TAU;
 
 #[derive(Debug, Clone, Copy)]
 pub enum SideRotation {
@@ -105,24 +106,32 @@ pub fn choose_movable_pieces(
 
 pub fn cleanup_movable_pieces(
     mut commands: Commands,
-    movable_pieces: Query<Entity, With<MovablePiece>>,
+    mut movable_pieces: Query<(Entity, &mut Transform, &MovablePiece)>,
 ) {
-    for entity in &movable_pieces {
-        commands.entity(entity).remove::<MovablePiece>();
+    for (entity, mut transform, movable_piece) in &mut movable_pieces {
+        if movable_piece.left_angle == 0.0 {
+            commands.entity(entity).remove::<MovablePiece>();
+        }
     }
 }
 
 // 纠正旋转后的坐标值误差
-pub fn piece_translation_round(mut movable_pieces: Query<&mut Transform, With<MovablePiece>>) {
-    for mut transform in &mut movable_pieces {
-        transform.translation.x = transform.translation.x.round();
-        transform.translation.y = transform.translation.y.round();
-        transform.translation.z = transform.translation.z.round();
+pub fn piece_translation_round(mut movable_pieces: Query<(&mut Transform, &MovablePiece)>) {
+    for (mut transform, movable_piece) in &mut movable_pieces {
+        if movable_piece.left_angle == 0.0 {
+            transform.translation.x = transform.translation.x.round();
+            transform.translation.y = transform.translation.y.round();
+            transform.translation.z = transform.translation.z.round();
+        }
     }
 }
 
-pub fn rotate_cube(mut movable_pieces: Query<(&MovablePiece, &mut Transform)>) {
-    for (movable_piece, mut transform) in &mut movable_pieces {
+pub fn rotate_cube(
+    mut movable_pieces: Query<(&mut MovablePiece, &mut Transform)>,
+    cube_settings: Res<CubeSettings>,
+    time: Res<Time>,
+) {
+    for (mut movable_piece, mut transform) in &mut movable_pieces {
         info!(
             "rotate - movable cube={:?}, transform={}",
             &movable_piece, transform.translation
@@ -132,14 +141,36 @@ pub fn rotate_cube(mut movable_pieces: Query<(&MovablePiece, &mut Transform)>) {
             Axis::Y => Vec3::Y,
             Axis::Z => Vec3::Z,
         };
-        let angle = match movable_piece.rotate {
-            SideRotation::Clockwise90 => FRAC_PI_2,
-            SideRotation::Clockwise180 => PI,
-            SideRotation::Clockwise270 => 3.0 * PI / 2.0,
-            SideRotation::Counterclockwise90 => -FRAC_PI_2,
-            SideRotation::Counterclockwise180 => -PI,
-            SideRotation::Counterclockwise270 => -3.0 * PI / 2.0,
+        let mut angle = match movable_piece.rotate {
+            SideRotation::Clockwise90 | SideRotation::Clockwise180 | SideRotation::Clockwise270 => {
+                cube_settings.rotate_speed * TAU * time.delta_seconds()
+            }
+            SideRotation::Counterclockwise90
+            | SideRotation::Counterclockwise180
+            | SideRotation::Counterclockwise270 => {
+                -cube_settings.rotate_speed * TAU * time.delta_seconds()
+            }
         };
-        transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(axis, angle));
+
+        let mut new_left_angle = movable_piece.left_angle - angle;
+        match movable_piece.rotate {
+            SideRotation::Clockwise90 | SideRotation::Clockwise180 | SideRotation::Clockwise270 => {
+                if new_left_angle < 0.0 {
+                    angle = movable_piece.left_angle;
+                    new_left_angle = 0.0;
+                }
+            }
+            SideRotation::Counterclockwise90
+            | SideRotation::Counterclockwise180
+            | SideRotation::Counterclockwise270 => {
+                if new_left_angle > 0.0 {
+                    angle = movable_piece.left_angle;
+                    new_left_angle = 0.0;
+                }
+            }
+        };
+
+        transform.rotate_around(Vec3::new(0.0, 0.0, 0.0), Quat::from_axis_angle(axis, angle));
+        movable_piece.left_angle = new_left_angle;
     }
 }

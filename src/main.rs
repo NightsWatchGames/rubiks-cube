@@ -1,18 +1,19 @@
 use bevy::prelude::*;
 use bevy::time::FixedTimestep;
+use bevy::transform::TransformSystem;
 use bevy_inspector_egui::prelude::*;
 use std::collections::VecDeque;
 use std::time::Duration;
 
 use cube::*;
 use debug::*;
-use scramble::*;
 use moving::*;
+use scramble::*;
 
 mod cube;
 mod debug;
-mod scramble;
 mod moving;
+mod scramble;
 
 fn main() {
     App::new()
@@ -20,30 +21,27 @@ fn main() {
         .add_plugin(WorldInspectorPlugin::new())
         .add_startup_system(setup)
         .insert_resource(CubeSettings::default())
-        .insert_resource(SideMoveQueue (VecDeque::new()))
+        .insert_resource(SideMoveQueue(VecDeque::new()))
         .insert_resource(DebugRandomTimer(Timer::new(
             Duration::from_secs(1),
             TimerMode::Repeating,
         )))
         .add_system_to_stage(CoreStage::PreUpdate, choose_movable_pieces)
-
-        .add_system_to_stage(
-            CoreStage::Update,
-            debug_print_transform_before_rotated.before(rotate_cube),
-        )
+        // .add_system_to_stage(
+        // CoreStage::Update,
+        // debug_print_transform_before_rotated.before(rotate_cube),
+        // )
         .add_system_to_stage(CoreStage::Update, rotate_cube)
-        .add_system_to_stage(
-            CoreStage::Update,
-            debug_print_transform_after_rotated.after(rotate_cube),
-        )
-
-        .add_system_to_stage(
+        // .add_system_to_stage(
+        // CoreStage::Update,
+        // debug_print_transform_after_rotated.after(rotate_cube),
+        // )
+        .add_system_set_to_stage(
             CoreStage::PostUpdate,
-            piece_translation_round.after(bevy::transform::TransformSystem::TransformPropagate),
-        )
-        .add_system_to_stage(
-            CoreStage::PostUpdate,
-            cleanup_movable_pieces.after(piece_translation_round),
+            SystemSet::new()
+                .after(TransformSystem::TransformPropagate)
+                .with_system(piece_translation_round)
+                .with_system(cleanup_movable_pieces.after(piece_translation_round))
         )
 
         .add_system(debug_random_side_move_event)
