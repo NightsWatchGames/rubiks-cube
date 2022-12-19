@@ -12,6 +12,14 @@ pub struct MovablePiece {
 #[reflect(Component)]
 pub struct Piece(pub Vec3);
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum PlayMode {
+    // 练习模式
+    Practice,
+    // 计时模式
+    Timekeeping,
+}
+
 /// 魔方设置
 #[derive(Debug, Resource)]
 pub struct CubeSettings {
@@ -27,6 +35,7 @@ pub struct CubeSettings {
     pub right_color: Color,
     pub top_color: Color,
     pub bottom_color: Color,
+    pub play_mode: PlayMode,
 }
 
 impl Default for CubeSettings {
@@ -41,6 +50,7 @@ impl Default for CubeSettings {
             right_color: Color::RED,
             top_color: Color::WHITE,
             bottom_color: Color::YELLOW,
+            play_mode: PlayMode::Practice,
         }
     }
 }
