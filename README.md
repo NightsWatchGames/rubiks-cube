@@ -8,6 +8,9 @@
 - [ ] WASM支持
 - [ ] N阶魔方
 
+## 游戏截图
+![playing cube](https://raw.githubusercontent.com/NightsWatchGames/rubiks-cube/master/screenshots/playing_cube.jpg)
+
 ## 参考资料
 - [Rubik's Cube - Wikipedia](https://en.wikipedia.org/wiki/Rubik%27s_Cube)
 - [Online Rubik's Cube example1](https://rubikscu.be/)
