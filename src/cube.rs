@@ -1,10 +1,11 @@
-use crate::debug::*;
 use crate::moving::{self, *};
 use bevy::{prelude::*, reflect};
 use bevy_mod_picking::PickableBundle;
 use bevy_mod_raycast::RaycastMesh;
 use rand::seq::SliceRandom;
 use rand::Rng;
+use std::f32::consts::PI;
+use std::f32::consts::FRAC_PI_2;
 
 #[derive(Debug, Component)]
 pub struct MovablePiece {
@@ -13,9 +14,33 @@ pub struct MovablePiece {
     pub left_angle: f32,
 }
 
-#[derive(Debug, Component, Reflect, Default)]
+#[derive(Debug, Component, Reflect, Default, Clone, Copy)]
 #[reflect(Component)]
-pub struct Piece(pub Vec3);
+pub struct Piece {
+    pub init_pos: Vec3,
+    pub size: f32,
+}
+
+impl Piece {
+    pub fn has_up_face(&self) -> bool {
+        self.init_pos.y == 1.0
+    }
+    pub fn has_down_face(&self) -> bool {
+        self.init_pos.y == -1.0
+    }
+    pub fn has_left_face(&self) -> bool {
+        self.init_pos.x == -1.0
+    }
+    pub fn has_right_face(&self) -> bool {
+        self.init_pos.x == 1.0
+    }
+    pub fn has_front_face(&self) -> bool {
+        self.init_pos.z == 1.0
+    }
+    pub fn has_back_face(&self) -> bool {
+        self.init_pos.z == -1.0
+    }
+}
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum PlayMode {
@@ -38,8 +63,8 @@ pub struct CubeSettings {
     pub back_color: Color,
     pub left_color: Color,
     pub right_color: Color,
-    pub top_color: Color,
-    pub bottom_color: Color,
+    pub up_color: Color,
+    pub down_color: Color,
     pub play_mode: PlayMode,
 }
 
@@ -53,8 +78,8 @@ impl Default for CubeSettings {
             back_color: Color::BLUE,
             left_color: Color::ORANGE,
             right_color: Color::RED,
-            top_color: Color::WHITE,
-            bottom_color: Color::YELLOW,
+            up_color: Color::WHITE,
+            down_color: Color::YELLOW,
             play_mode: PlayMode::Practice,
         }
     }
@@ -88,31 +113,135 @@ pub fn setup_cube(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    cube_settings: Res<CubeSettings>,
 ) {
-    create_cube(&mut commands, &mut meshes, &mut materials);
+    create_cube(&mut commands, &mut meshes, &mut materials, &cube_settings);
 }
 
 fn create_cube(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
+    cube_settings: &Res<CubeSettings>,
 ) {
     // cubes
     for x in [-1.0, 0.0, 1.0] {
         for y in [-1.0, 0.0, 1.0] {
             for z in [-1.0, 0.0, 1.0] {
+                let piece = Piece {init_pos: Vec3::new(x, y, z), size: cube_settings.piece_size };
                 commands
                     .spawn(PbrBundle {
                         mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                        material: materials.add(debug_random_color().into()),
+                        material: materials.add(Color::BLACK.into()),
                         transform: Transform::from_translation(Vec3::new(x, y, z)),
                         ..default()
                     })
-                    .insert(Piece(Vec3::new(x, y, z)))
+                    .insert(piece)
                     .insert(PickableBundle::default())
-                    .insert(RaycastMesh::<MyRaycastSet>::default());
+                    .insert(RaycastMesh::<MyRaycastSet>::default())
+                    .add_children(|parent| {
+                        // 外部贴纸
+                        spwan_stickers(parent, piece, meshes, materials, cube_settings);
+                    });
             }
         }
+    }
+}
+
+fn spwan_stickers(
+    parent: &mut ChildBuilder,
+    piece: Piece,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    cube_settings: &CubeSettings,) {
+    let sticker_size = 0.9 * cube_settings.piece_size;
+
+    if piece.has_up_face() {
+        let transform = Transform::from_translation(Vec3::new(0.0, 0.5 * cube_settings.piece_size + 0.01, 0.0));
+        parent.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Plane { size: sticker_size })),
+            material: materials.add(StandardMaterial {
+                base_color: cube_settings.up_color,
+                unlit: true,
+                ..default()
+            }),
+            transform: transform,
+            ..Default::default()
+        });
+    }
+
+    if piece.has_down_face() {
+        let mut transform = Transform::from_translation(Vec3::new(0.0, -0.5 * cube_settings.piece_size - 0.01, 0.0));
+        transform.rotate_x(PI);
+        parent.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Plane { size: sticker_size })),
+            material: materials.add(StandardMaterial {
+                base_color: cube_settings.down_color,
+                unlit: true,
+                ..default()
+            }),
+            transform: transform,
+            ..Default::default()
+        });
+    }
+    if piece.has_left_face() {
+        let mut transform = Transform::from_translation(Vec3::new(-0.5 * cube_settings.piece_size - 0.01, 0.0, 0.0));
+        transform.rotate_z(FRAC_PI_2);
+        parent.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Plane { size: sticker_size })),
+            material: materials.add(StandardMaterial {
+                base_color: cube_settings.left_color,
+                unlit: true,
+                ..default()
+            }),
+            transform: transform,
+            ..Default::default()
+        });
+    }
+
+    if piece.has_right_face() {
+        let mut transform = Transform::from_translation(Vec3::new(0.5 * cube_settings.piece_size + 0.01, 0.0, 0.0));
+        transform.rotate_z(-FRAC_PI_2);
+        parent.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Plane { size: sticker_size })),
+            material: materials.add(StandardMaterial {
+                base_color: cube_settings.right_color,
+                unlit: true,
+                ..default()
+            }),
+            transform: transform,
+            ..Default::default()
+        });
+    }
+
+    if piece.has_front_face() {
+        let mut transform = Transform::from_translation(Vec3::new(0.0, 0.0, 0.5 * cube_settings.piece_size + 0.01));
+        transform.rotate_x(FRAC_PI_2);
+        parent.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Plane { size: sticker_size })),
+            material: materials.add(StandardMaterial {
+                base_color: cube_settings.front_color,
+                unlit: true,
+                ..default()
+            }),
+            transform: transform,
+            ..Default::default()
+        });
+    }
+
+    if piece.has_back_face() {
+        let mut transform = Transform::from_translation(Vec3::new(0.0, 0.0, -0.5 * cube_settings.piece_size - 0.01));
+        transform.rotate_x(-FRAC_PI_2);
+        parent.spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Plane { size: sticker_size })),
+            material: materials.add(StandardMaterial {
+                base_color: cube_settings.back_color,
+                unlit: true,
+                ..default()
+            }),
+            transform: transform,
+            ..Default::default()
+        });
     }
 }
 
@@ -120,6 +249,7 @@ pub fn reset_cube(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    cube_settings: Res<CubeSettings>,
     mut events: EventReader<ResetEvent>,
     q_pieces: Query<Entity, With<Piece>>,
 ) {
@@ -129,7 +259,7 @@ pub fn reset_cube(
             commands.entity(piece).despawn_recursive();
         }
         // 重建魔方
-        create_cube(&mut commands, &mut meshes, &mut materials);
+        create_cube(&mut commands, &mut meshes, &mut materials, &cube_settings);
     }
 }
 
