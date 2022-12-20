@@ -8,6 +8,18 @@
 - [ ] WASM支持
 - [ ] N阶魔方
 
+## 运行
+1. 本地运行
+```
+cargo run
+```
+2. WASM运行
+```
+rustup target install wasm32-unknown-unknown
+cargo install wasm-server-runner
+cargo run --target wasm32-unknown-unknown
+```
+
 ## 游戏截图
 ![playing cube](https://raw.githubusercontent.com/NightsWatchGames/rubiks-cube/master/screenshots/playing_cube.jpg)
 
