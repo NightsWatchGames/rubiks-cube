@@ -1,4 +1,4 @@
-use crate::{cube::*, moving::SideMoveQueue, scramble::ScrambleEvent};
+use crate::{cube::*, moving::SideMoveQueue};
 use bevy::prelude::*;
 use bevy::utils::Instant;
 use bevy_egui::{egui, EguiContext};
@@ -12,6 +12,7 @@ pub fn game_ui(
     mut move_seq: ResMut<SideMoveQueue>,
     mut timekeeping_timer: ResMut<TimekeepingTimer>,
     mut scramble_event: EventWriter<ScrambleEvent>,
+    mut reset_event: EventWriter<ResetEvent>,
 ) {
     egui::Window::new("Game UI").show(egui_context.ctx_mut(), |ui| {
         egui::Grid::new("ui_grid")
@@ -64,7 +65,7 @@ pub fn game_ui(
                     .add_sized([100.0, 30.0], egui::Button::new("Reset"))
                     .clicked()
                 {
-                    info!("send reset event");
+                    reset_event.send_default();
                 }
 
                 ui.end_row();

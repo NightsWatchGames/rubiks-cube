@@ -12,13 +12,11 @@ use std::time::Duration;
 use cube::*;
 use debug::*;
 use moving::*;
-use scramble::*;
 use ui::*;
 
 mod cube;
 mod debug;
 mod moving;
-mod scramble;
 mod ui;
 
 fn main() {
@@ -31,6 +29,7 @@ fn main() {
         .add_plugin(DebugEventsPickingPlugin)
         .add_plugin(DefaultRaycastingPlugin::<MyRaycastSet>::default())
         .add_startup_system(setup)
+        .add_startup_system(setup_cube)
         .insert_resource(CubeSettings::default())
         .insert_resource(SideMoveQueue(VecDeque::new()))
         .insert_resource(MouseDraggingRecorder { start_pos: None, piece: None})
@@ -41,6 +40,7 @@ fn main() {
         .insert_resource(TimekeepingTimer(Instant::now()))
         .register_type::<Piece>()
         .add_event::<ScrambleEvent>()
+        .add_event::<ResetEvent>()
 
         .add_system_to_stage(
             CoreStage::First,
@@ -63,6 +63,7 @@ fn main() {
         )
 
         .add_system(scramble_cube)
+        .add_system(reset_cube)
         .run();
 }
 
@@ -71,58 +72,9 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // cubes
-    let y = 0.0;
-    for x in [-1.0, 0.0, 1.0] {
-        for z in [-1.0, 0.0, 1.0] {
-            commands
-                .spawn(PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                    material: materials.add(debug_random_color().into()),
-                    transform: Transform::from_translation(Vec3::new(x, y, z)),
-                    ..default()
-                })
-                .insert(Piece (Vec3::new(x, y, z)))
-                .insert(PickableBundle::default())
-                .insert(RaycastMesh::<MyRaycastSet>::default());
-        }
-    }
-
-    let y = 1.0;
-    for x in [-1.0, 0.0, 1.0] {
-        for z in [-1.0, 0.0, 1.0] {
-            commands
-                .spawn(PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                    material: materials.add(debug_random_color().into()),
-                    transform: Transform::from_translation(Vec3::new(x, y, z)),
-                    ..default()
-                })
-                .insert(Piece (Vec3::new(x, y, z)))
-                .insert(PickableBundle::default())
-                .insert(RaycastMesh::<MyRaycastSet>::default());
-        }
-    }
-
-    let y = -1.0;
-    for x in [-1.0, 0.0, 1.0] {
-        for z in [-1.0, 0.0, 1.0] {
-            commands
-                .spawn(PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                    material: materials.add(debug_random_color().into()),
-                    transform: Transform::from_translation(Vec3::new(x, y, z)),
-                    ..default()
-                })
-                .insert(Piece (Vec3::new(x, y, z)))
-                .insert(PickableBundle::default())
-                .insert(RaycastMesh::<MyRaycastSet>::default());
-        }
-    }
-
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(10.0, 10.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     }).insert(PickingCameraBundle::default())
     .insert(RaycastSource::<MyRaycastSet>::new());
