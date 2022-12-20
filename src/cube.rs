@@ -65,7 +65,10 @@ pub struct CubeSettings {
     pub right_color: Color,
     pub up_color: Color,
     pub down_color: Color,
+    // 游玩模式
     pub play_mode: PlayMode,
+    // 相机缩放速度
+    pub camera_zoom_speed: f32,
 }
 
 impl Default for CubeSettings {
@@ -81,6 +84,7 @@ impl Default for CubeSettings {
             up_color: Color::WHITE,
             down_color: Color::YELLOW,
             play_mode: PlayMode::Practice,
+            camera_zoom_speed: 1.01
         }
     }
 }

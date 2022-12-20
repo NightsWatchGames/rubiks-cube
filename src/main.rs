@@ -66,6 +66,7 @@ fn main() {
 
         .add_system(scramble_cube)
         .add_system(reset_cube)
+        .add_system(zoom_camera)
         .run();
 }
 
