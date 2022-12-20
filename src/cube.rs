@@ -1,8 +1,8 @@
+use crate::debug::*;
+use crate::moving::{self, *};
 use bevy::{prelude::*, reflect};
 use bevy_mod_picking::PickableBundle;
 use bevy_mod_raycast::RaycastMesh;
-use crate::moving::{*, self};
-use crate::debug::*;
 use rand::seq::SliceRandom;
 use rand::Rng;
 
@@ -92,53 +92,26 @@ pub fn setup_cube(
     create_cube(&mut commands, &mut meshes, &mut materials);
 }
 
-fn create_cube(commands: &mut Commands, meshes: &mut ResMut<Assets<Mesh>>, materials: &mut ResMut<Assets<StandardMaterial>>,) {
+fn create_cube(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+) {
     // cubes
-    let y = 0.0;
     for x in [-1.0, 0.0, 1.0] {
-        for z in [-1.0, 0.0, 1.0] {
-            commands
-                .spawn(PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                    material: materials.add(debug_random_color().into()),
-                    transform: Transform::from_translation(Vec3::new(x, y, z)),
-                    ..default()
-                })
-                .insert(Piece (Vec3::new(x, y, z)))
-                .insert(PickableBundle::default())
-                .insert(RaycastMesh::<MyRaycastSet>::default());
-        }
-    }
-
-    let y = 1.0;
-    for x in [-1.0, 0.0, 1.0] {
-        for z in [-1.0, 0.0, 1.0] {
-            commands
-                .spawn(PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                    material: materials.add(debug_random_color().into()),
-                    transform: Transform::from_translation(Vec3::new(x, y, z)),
-                    ..default()
-                })
-                .insert(Piece (Vec3::new(x, y, z)))
-                .insert(PickableBundle::default())
-                .insert(RaycastMesh::<MyRaycastSet>::default());
-        }
-    }
-
-    let y = -1.0;
-    for x in [-1.0, 0.0, 1.0] {
-        for z in [-1.0, 0.0, 1.0] {
-            commands
-                .spawn(PbrBundle {
-                    mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                    material: materials.add(debug_random_color().into()),
-                    transform: Transform::from_translation(Vec3::new(x, y, z)),
-                    ..default()
-                })
-                .insert(Piece (Vec3::new(x, y, z)))
-                .insert(PickableBundle::default())
-                .insert(RaycastMesh::<MyRaycastSet>::default());
+        for y in [-1.0, 0.0, 1.0] {
+            for z in [-1.0, 0.0, 1.0] {
+                commands
+                    .spawn(PbrBundle {
+                        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+                        material: materials.add(debug_random_color().into()),
+                        transform: Transform::from_translation(Vec3::new(x, y, z)),
+                        ..default()
+                    })
+                    .insert(Piece(Vec3::new(x, y, z)))
+                    .insert(PickableBundle::default())
+                    .insert(RaycastMesh::<MyRaycastSet>::default());
+            }
         }
     }
 }
@@ -147,8 +120,9 @@ pub fn reset_cube(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut events: EventReader<ResetEvent>, 
-    q_pieces: Query<Entity, With<Piece>>) {
+    mut events: EventReader<ResetEvent>,
+    q_pieces: Query<Entity, With<Piece>>,
+) {
     for _ in events.iter() {
         // 移除原有魔方
         for piece in &q_pieces {

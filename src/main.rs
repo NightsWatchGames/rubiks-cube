@@ -13,11 +13,13 @@ use cube::*;
 use debug::*;
 use moving::*;
 use ui::*;
+use camera::*;
 
 mod cube;
 mod debug;
 mod moving;
 mod ui;
+mod camera;
 
 fn main() {
     App::new()
@@ -28,7 +30,7 @@ fn main() {
         .add_plugin(DebugCursorPickingPlugin)
         .add_plugin(DebugEventsPickingPlugin)
         .add_plugin(DefaultRaycastingPlugin::<MyRaycastSet>::default())
-        .add_startup_system(setup)
+        .add_startup_system(setup_camera)
         .add_startup_system(setup_cube)
         .insert_resource(CubeSettings::default())
         .insert_resource(SideMoveQueue(VecDeque::new()))
@@ -67,18 +69,6 @@ fn main() {
         .run();
 }
 
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    // camera
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-        ..default()
-    }).insert(PickingCameraBundle::default())
-    .insert(RaycastSource::<MyRaycastSet>::new());
-}
 
 fn intersection(query: Query<&Intersection<MyRaycastSet>>) {
     for intersection in &query {
