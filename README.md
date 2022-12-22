@@ -5,8 +5,9 @@
 - [x] 鼠标拖拽魔方旋转
 - [x] 游戏UI
 - [ ] 相机视角控制（缩放、移动）
-- [ ] WASM支持
-- [ ] N阶魔方
+- [x] WASM支持
+
+在线游玩：[点这里](https://nightswatchgames.github.io/games/rubiks-cube/)（电脑版Chrome/Firefox打卡）
 
 ## 运行
 1. 本地运行
@@ -18,6 +19,11 @@ cargo run
 rustup target install wasm32-unknown-unknown
 cargo install wasm-server-runner
 cargo run --target wasm32-unknown-unknown
+```
+```
+cargo install wasm-bindgen-cli
+cargo build --release --target wasm32-unknown-unknown
+wasm-bindgen --out-dir ./out/ --target web ./target/wasm32-unknown-unknown/release/rubiks-cube.wasm
 ```
 
 ## 游戏截图
