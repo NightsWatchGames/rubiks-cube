@@ -7,7 +7,7 @@
 - [ ] 相机视角控制（缩放、移动）
 - [x] WASM支持
 
-在线游玩：[点这里](https://nightswatchgames.github.io/games/rubiks-cube/)（电脑版Chrome/Firefox打开）
+在线游玩：[点这里](https://nightswatchgames.github.io/games/rubiks-cube/)（电脑版Chrome/Firefox/Edge打开）
 
 ## 运行
 1. 本地运行

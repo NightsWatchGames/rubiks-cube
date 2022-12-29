@@ -89,6 +89,13 @@ impl Default for CubeSettings {
     }
 }
 
+impl CubeSettings {
+    // 魔方整体坐标的边界值（正数）
+    pub fn coordinate_boundary(&self) -> f32 {
+        (self.cube_order as f32 / 2.0 ) * self.piece_size
+    }
+}
+
 #[derive(Debug, Component)]
 pub enum Face {
     // 上面

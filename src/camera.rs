@@ -9,9 +9,7 @@ use bevy_mod_picking::PickingCameraBundle;
 use bevy_mod_raycast::Intersection;
 use bevy_mod_raycast::RaycastSource;
 
-pub fn setup_camera(
-    mut commands: Commands,
-) {
+pub fn setup_camera(mut commands: Commands) {
     // camera
     commands
         .spawn(Camera3dBundle {
@@ -32,24 +30,36 @@ pub fn zoom_camera(
         match ev.unit {
             MouseScrollUnit::Line => {
                 if ev.x + ev.y > 0.0 {
-                    transform.translation.x = cube_settings.camera_zoom_speed * transform.translation.x;
-                    transform.translation.y = cube_settings.camera_zoom_speed * transform.translation.y;
-                    transform.translation.z = cube_settings.camera_zoom_speed * transform.translation.z;
+                    transform.translation.x =
+                        cube_settings.camera_zoom_speed * transform.translation.x;
+                    transform.translation.y =
+                        cube_settings.camera_zoom_speed * transform.translation.y;
+                    transform.translation.z =
+                        cube_settings.camera_zoom_speed * transform.translation.z;
                 } else {
-                    transform.translation.x = transform.translation.x / cube_settings.camera_zoom_speed;
-                    transform.translation.y = transform.translation.y / cube_settings.camera_zoom_speed;
-                    transform.translation.z = transform.translation.z / cube_settings.camera_zoom_speed;
+                    transform.translation.x =
+                        transform.translation.x / cube_settings.camera_zoom_speed;
+                    transform.translation.y =
+                        transform.translation.y / cube_settings.camera_zoom_speed;
+                    transform.translation.z =
+                        transform.translation.z / cube_settings.camera_zoom_speed;
                 }
             }
             MouseScrollUnit::Pixel => {
                 if ev.x + ev.y > 0.0 {
-                    transform.translation.x = cube_settings.camera_zoom_speed * transform.translation.x;
-                    transform.translation.y = cube_settings.camera_zoom_speed * transform.translation.y;
-                    transform.translation.z = cube_settings.camera_zoom_speed * transform.translation.z;
+                    transform.translation.x =
+                        cube_settings.camera_zoom_speed * transform.translation.x;
+                    transform.translation.y =
+                        cube_settings.camera_zoom_speed * transform.translation.y;
+                    transform.translation.z =
+                        cube_settings.camera_zoom_speed * transform.translation.z;
                 } else {
-                    transform.translation.x = transform.translation.x / cube_settings.camera_zoom_speed;
-                    transform.translation.y = transform.translation.y / cube_settings.camera_zoom_speed;
-                    transform.translation.z = transform.translation.z / cube_settings.camera_zoom_speed;
+                    transform.translation.x =
+                        transform.translation.x / cube_settings.camera_zoom_speed;
+                    transform.translation.y =
+                        transform.translation.y / cube_settings.camera_zoom_speed;
+                    transform.translation.z =
+                        transform.translation.z / cube_settings.camera_zoom_speed;
                 }
             }
         }
@@ -68,11 +78,135 @@ pub fn move_camera(
         // println!("inter: {:?}", inter);
         if inter.is_none() || inter.unwrap().position().is_none() {
             for motion in motion_evr.iter() {
+                // motion.delta.x 鼠标左滑为负、右滑为正
+                // motion.delta.y 鼠标上滑为负、下滑为正
                 for mut transform in &mut q_camera {
-                    println!("transform.local_y(): {:?}, motion.delta: {:?}", transform.local_y(), motion.delta);
-                    let axis = (transform.local_y() * motion.delta.extend(0.0)).normalize();
-                    println!("axis: {:?}", axis);
-                    transform.rotate_around(Vec3::ZERO, Quat::from_axis_angle(axis, 0.001 * TAU * motion.delta.x));
+                    println!("camera translation: {}", transform.translation);
+                    let mut hitted = 0;
+                    // 相机在魔方前面
+                    if transform.translation.z >= cube_settings.coordinate_boundary()
+                        && transform.translation.z.abs() / transform.translation.x.abs() >= 1.0
+                        && transform.translation.z.abs() / transform.translation.y.abs() >= 1.0
+                    {
+                        hitted += 1;
+                        println!("Forward face");
+                        if motion.delta.x.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::Y, 0.001 * -motion.delta.x * TAU),
+                            );
+                        }
+                        if motion.delta.y.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::X, 0.001 * -motion.delta.y * TAU),
+                            );
+                        }
+                    }
+                    // 相机在魔方后面
+                    else if transform.translation.z <= -cube_settings.coordinate_boundary()
+                        && transform.translation.z.abs() / transform.translation.x.abs() >= 1.0
+                        && transform.translation.z.abs() / transform.translation.y.abs() >= 1.0
+                    {
+                        hitted += 1;
+                        println!("Back face {}, {}", transform.translation.z.abs() / transform.translation.x.abs(), transform.translation.z.abs() / transform.translation.y.abs());
+                        if motion.delta.x.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::Y, 0.001 * -motion.delta.x * TAU),
+                            );
+                        }
+                        if motion.delta.y.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::X, 0.001 * motion.delta.y * TAU),
+                            );
+                        }
+                    }
+                    // 相机在魔方左面
+                    else if transform.translation.x < -cube_settings.coordinate_boundary()
+                        && transform.translation.x.abs() / transform.translation.z.abs() > 1.0
+                        && transform.translation.x.abs() / transform.translation.y.abs() > 1.0
+                    {
+                        hitted += 1;
+                        println!("Left face");
+                        if motion.delta.x.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::Y, 0.001 * -motion.delta.x * TAU),
+                            );
+                        }
+                        if motion.delta.y.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::Z, 0.001 * -motion.delta.y * TAU),
+                            );
+                        }
+                    }
+                    // 相机在魔方右面
+                    else if transform.translation.x > cube_settings.coordinate_boundary()
+                        && transform.translation.x.abs() / transform.translation.z.abs() > 1.0
+                        && transform.translation.x.abs() / transform.translation.y.abs() > 1.0
+                    {
+                        hitted += 1;
+                        println!("Right face");
+                        if motion.delta.x.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::Y, 0.001 * -motion.delta.x * TAU),
+                            );
+                        }
+                        if motion.delta.y.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::Z, 0.001 * motion.delta.y * TAU),
+                            );
+                        }
+                    }
+                    // 相机在魔方上面
+                    else if transform.translation.y > cube_settings.coordinate_boundary()
+                        && transform.translation.y.abs() / transform.translation.x.abs() > 1.0
+                        && transform.translation.y.abs() / transform.translation.z.abs() > 1.0
+                    {
+                        hitted += 1;
+                        dbg!(transform.translation.y.abs());
+                        dbg!(transform.translation.z.abs());
+                        println!("Up face, {}, {}", transform.translation.y.abs() / transform.translation.x.abs(), transform.translation.y.abs() / transform.translation.z.abs());
+                        if motion.delta.x.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::Z, 0.001 * -motion.delta.x * TAU),
+                            );
+                        }
+                        if motion.delta.y.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::X, 0.001 * motion.delta.y * TAU),
+                            );
+                        }
+                    }
+                    // 相机在魔方下面
+                    else if transform.translation.y < -cube_settings.coordinate_boundary()
+                        && transform.translation.y.abs() / transform.translation.x.abs() > 1.0
+                        && transform.translation.y.abs() / transform.translation.z.abs() > 1.0
+                    {
+                        hitted += 1;
+                        println!("Down face");
+                        if motion.delta.x.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::Z, 0.001 * -motion.delta.x * TAU),
+                            );
+                        }
+                        if motion.delta.y.abs() > 0.001 {
+                            transform.rotate_around(
+                                Vec3::ZERO,
+                                Quat::from_axis_angle(Vec3::X, 0.001 * -motion.delta.y * TAU),
+                            );
+                        }
+                    }
+                    // hitted 应该是1
+                    println!("hitted: {}", hitted);
                 }
             }
         }
