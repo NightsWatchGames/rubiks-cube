@@ -1,21 +1,20 @@
-[English](https://github.com/NightsWatchGames/rubiks-cube/blob/master/README_EN.md)
-# Rubik's Cube 魔方
-- [x] 3阶魔方
-- [x] 随机打乱魔方
-- [x] 重置魔方
-- [x] 鼠标拖拽魔方旋转
-- [x] 游戏UI
-- [x] 相机视角控制（缩放、移动）
-- [x] WASM支持
+# Rubik's Cube
+- [x] Rubiks cube
+- [x] Scramble cube
+- [x] Reset cube
+- [x] Mouse dragging
+- [x] Game UI
+- [x] Camera controller (move、zoom)
+- [x] WASM support
 
-在线游玩：[点这里](https://nightswatchgames.github.io/games/rubiks-cube/)（电脑版Chrome/Firefox/Edge打开）
+Play online：[click here](https://nightswatchgames.github.io/games/rubiks-cube/)（Open with Chrome/Firefox/Edge）
 
-## 运行
-1. 本地运行
+## Get started
+1. Native
 ```
 cargo run
 ```
-2. WASM运行
+2. WASM
 ```
 rustup target install wasm32-unknown-unknown
 cargo install wasm-server-runner
@@ -27,10 +26,10 @@ cargo build --release --target wasm32-unknown-unknown
 wasm-bindgen --out-dir ./out/ --target web ./target/wasm32-unknown-unknown/release/rubiks-cube.wasm
 ```
 
-## 游戏截图
+## Screenshots
 ![playing cube](https://raw.githubusercontent.com/NightsWatchGames/rubiks-cube/master/screenshots/playing_cube.jpg)
 
-## 参考资料
+## Reference
 - [Rubik's Cube - Wikipedia](https://en.wikipedia.org/wiki/Rubik%27s_Cube)
 - [Online Rubik's Cube example1](https://rubikscu.be/)
 - [Online Rubik's Cube example2](https://cube-solver.com/)
