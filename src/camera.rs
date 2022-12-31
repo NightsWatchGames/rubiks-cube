@@ -81,7 +81,7 @@ pub fn move_camera(
                 // motion.delta.y 鼠标上滑为负、下滑为正
                 for mut transform in &mut q_camera {
                     // println!("camera translation: {}, motion.delta: {}", transform.translation, motion.delta);
-                    if motion.delta.x.abs() > motion.delta.y.abs() {
+                    if motion.delta.x.abs() > 0.001 {
                         // 水平转动，相机只需要围绕y轴转动即可
                         let max = transform
                             .translation
@@ -96,7 +96,8 @@ pub fn move_camera(
                             0.0,
                         );
                         transform.rotate_around(Vec3::ZERO, quat);
-                    } else {
+                    }
+                    if motion.delta.y.abs() > 0.001 {
                         // 垂直转动，需要同时围绕x轴和z轴转动，而且转动角度跟与坐标轴夹角角度成反比
                         let quat = Quat::from_euler(
                             EulerRot::XYZ,
