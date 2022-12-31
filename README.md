@@ -4,7 +4,7 @@
 - [x] 重置魔方
 - [x] 鼠标拖拽魔方旋转
 - [x] 游戏UI
-- [ ] 相机视角控制（缩放、移动）
+- [x] 相机视角控制（缩放、移动）
 - [x] WASM支持
 
 在线游玩：[点这里](https://nightswatchgames.github.io/games/rubiks-cube/)（电脑版Chrome/Firefox/Edge打开）
