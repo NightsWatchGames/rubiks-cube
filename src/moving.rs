@@ -269,17 +269,31 @@ pub fn mouse_dragging(
     }
 }
 
-fn gen_side_move_event(piece_translation: Vec3, start_pos: Vec3, end_pos: Vec3) -> Option<SideMoveEvent> {
+fn gen_side_move_event(
+    piece_translation: Vec3,
+    start_pos: Vec3,
+    end_pos: Vec3,
+) -> Option<SideMoveEvent> {
     if (start_pos.x.abs() - 1.5).abs() < 0.001 {
         let delta_y = end_pos.y - start_pos.y;
         let delta_z = end_pos.z - start_pos.z;
         if delta_y.abs() > delta_z.abs() {
             // y轴变化大，沿z轴旋转
             let rotate = {
-                if delta_y > 0.0 {
-                    SideRotation::Clockwise90
+                // 右面
+                if start_pos.x > 0.0 {
+                    if delta_y > 0.0 {
+                        SideRotation::Clockwise90
+                    } else {
+                        SideRotation::Counterclockwise90
+                    }
+                // 左面
                 } else {
-                    SideRotation::Counterclockwise90
+                    if delta_y > 0.0 {
+                        SideRotation::Counterclockwise90
+                    } else {
+                        SideRotation::Clockwise90
+                    }
                 }
             };
             return Some(SideMoveEvent {
@@ -289,10 +303,20 @@ fn gen_side_move_event(piece_translation: Vec3, start_pos: Vec3, end_pos: Vec3) 
         } else {
             // z轴变化大，沿y轴旋转
             let rotate = {
-                if delta_z > 0.0 {
-                    SideRotation::Counterclockwise90
+                // 右面
+                if start_pos.x > 0.0 {
+                    if delta_z > 0.0 {
+                        SideRotation::Counterclockwise90
+                    } else {
+                        SideRotation::Clockwise90
+                    }
+                // 左面
                 } else {
-                    SideRotation::Clockwise90
+                    if delta_z > 0.0 {
+                        SideRotation::Clockwise90
+                    } else {
+                        SideRotation::Counterclockwise90
+                    }
                 }
             };
             return Some(SideMoveEvent {
@@ -306,10 +330,20 @@ fn gen_side_move_event(piece_translation: Vec3, start_pos: Vec3, end_pos: Vec3) 
         if delta_x.abs() > delta_z.abs() {
             // x轴变化大，沿z轴旋转
             let rotate = {
-                if delta_x > 0.0 {
-                    SideRotation::Counterclockwise90
+                // 上面
+                if start_pos.y > 0.0 {
+                    if delta_x > 0.0 {
+                        SideRotation::Counterclockwise90
+                    } else {
+                        SideRotation::Clockwise90
+                    }
+                // 下面
                 } else {
-                    SideRotation::Clockwise90
+                    if delta_x > 0.0 {
+                        SideRotation::Clockwise90
+                    } else {
+                        SideRotation::Counterclockwise90
+                    }
                 }
             };
             return Some(SideMoveEvent {
@@ -319,10 +353,20 @@ fn gen_side_move_event(piece_translation: Vec3, start_pos: Vec3, end_pos: Vec3) 
         } else {
             // z轴变化大，沿x轴旋转
             let rotate = {
-                if delta_z > 0.0 {
-                    SideRotation::Clockwise90
+                // 上面
+                if start_pos.y > 0.0 {
+                    if delta_z > 0.0 {
+                        SideRotation::Clockwise90
+                    } else {
+                        SideRotation::Counterclockwise90
+                    }
+                // 下面
                 } else {
-                    SideRotation::Counterclockwise90
+                    if delta_z > 0.0 {
+                        SideRotation::Counterclockwise90
+                    } else {
+                        SideRotation::Clockwise90
+                    }
                 }
             };
             return Some(SideMoveEvent {
@@ -336,10 +380,20 @@ fn gen_side_move_event(piece_translation: Vec3, start_pos: Vec3, end_pos: Vec3) 
         if delta_x.abs() > delta_y.abs() {
             // x轴变化大，沿y轴旋转
             let rotate = {
-                if delta_x > 0.0 {
-                    SideRotation::Clockwise90
+                // 前面
+                if start_pos.z > 0.0 {
+                    if delta_x > 0.0 {
+                        SideRotation::Clockwise90
+                    } else {
+                        SideRotation::Counterclockwise90
+                    }
+                // 后面
                 } else {
-                    SideRotation::Counterclockwise90
+                    if delta_x > 0.0 {
+                        SideRotation::Counterclockwise90
+                    } else {
+                        SideRotation::Clockwise90
+                    }
                 }
             };
             return Some(SideMoveEvent {
@@ -349,10 +403,20 @@ fn gen_side_move_event(piece_translation: Vec3, start_pos: Vec3, end_pos: Vec3) 
         } else {
             // y轴变化大，沿x轴旋转
             let rotate = {
-                if delta_y > 0.0 {
-                    SideRotation::Counterclockwise90
+                // 前面
+                if start_pos.z > 0.0 {
+                    if delta_y > 0.0 {
+                        SideRotation::Counterclockwise90
+                    } else {
+                        SideRotation::Clockwise90
+                    }
+                // 后面
                 } else {
-                    SideRotation::Clockwise90
+                    if delta_y > 0.0 {
+                        SideRotation::Clockwise90
+                    } else {
+                        SideRotation::Counterclockwise90
+                    }
                 }
             };
             return Some(SideMoveEvent {
@@ -361,6 +425,4 @@ fn gen_side_move_event(piece_translation: Vec3, start_pos: Vec3, end_pos: Vec3) 
             });
         }
     }
-
-    return None;
 }
