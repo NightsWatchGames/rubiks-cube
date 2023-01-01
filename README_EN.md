@@ -7,7 +7,7 @@
 - [x] Camera controller (move、zoom)
 - [x] WASM support
 
-Play online：[click here](https://nightswatchgames.github.io/games/rubiks-cube/)（Open with Chrome/Firefox/Edge）
+Play online：[click here](https://nightswatchgames.github.io/games/rubiks-cube/)（Open with PC Chrome/Firefox/Edge）
 
 ## Get started
 1. Native
