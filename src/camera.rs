@@ -20,6 +20,7 @@ pub fn setup_camera(mut commands: Commands) {
         .insert(RaycastSource::<MyRaycastSet>::new());
 }
 
+// TODO 平滑放大缩小 参考 https://github.com/cart/card_combinator/blob/main/src/game/camera.rs
 pub fn zoom_camera(
     mut scroll_evr: EventReader<MouseWheel>,
     mut q_camera: Query<&mut Transform, With<Camera>>,
