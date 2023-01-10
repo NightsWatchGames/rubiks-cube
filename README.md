@@ -27,7 +27,9 @@ cargo build --release --target wasm32-unknown-unknown
 wasm-bindgen --out-dir ./out/ --target web ./target/wasm32-unknown-unknown/release/rubiks-cube.wasm
 ```
 
-## 游戏截图
+## 游戏展示
+视频演示：[B站](https://www.bilibili.com/video/BV1He4y1L7mS)
+
 ![playing cube](https://raw.githubusercontent.com/NightsWatchGames/rubiks-cube/master/screenshots/playing_cube.jpg)
 
 ## 参考资料

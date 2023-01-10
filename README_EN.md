@@ -27,6 +27,8 @@ wasm-bindgen --out-dir ./out/ --target web ./target/wasm32-unknown-unknown/relea
 ```
 
 ## Screenshots
+Game video: [YouTube](https://www.youtube.com/watch?v=hGuDTozFvMk)
+
 ![playing cube](https://raw.githubusercontent.com/NightsWatchGames/rubiks-cube/master/screenshots/playing_cube.jpg)
 
 ## Reference
