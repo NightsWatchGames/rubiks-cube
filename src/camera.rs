@@ -5,8 +5,8 @@ use crate::moving::*;
 use bevy::input::mouse::MouseMotion;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
-use bevy_mod_picking::PickingCameraBundle;
-use bevy_mod_raycast::Intersection;
+use bevy_mod_picking::backend::PointerHits;
+use bevy_mod_picking::prelude::*;
 use bevy_mod_raycast::RaycastSource;
 
 pub fn setup_camera(mut commands: Commands) {
@@ -16,7 +16,7 @@ pub fn setup_camera(mut commands: Commands) {
             transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         })
-        .insert(PickingCameraBundle::default())
+        .insert(RaycastPickCamera::default())
         .insert(RaycastSource::<MyRaycastSet>::new());
 }
 
@@ -71,12 +71,12 @@ pub fn move_camera(
     mut q_camera: Query<&mut Transform, With<Camera>>,
     mut motion_evr: EventReader<MouseMotion>,
     buttons: Res<Input<MouseButton>>,
-    q_intersection: Query<&Intersection<MyRaycastSet>>,
+    mut hit_er: EventReader<PointerHits>,
 ) {
+    println!("hit_er: {:?}", hit_er.iter().last());
     if buttons.pressed(MouseButton::Left) {
-        let inter = q_intersection.iter().last();
-        // println!("inter: {:?}", inter);
-        if inter.is_none() || inter.unwrap().position().is_none() {
+        if hit_er.is_empty() || hit_er.iter().last().unwrap().picks.is_empty() {
+            println!("move camera");
             for motion in motion_evr.iter() {
                 // motion.delta.x 鼠标左滑为负、右滑为正
                 // motion.delta.y 鼠标上滑为负、下滑为正
@@ -112,4 +112,5 @@ pub fn move_camera(
             }
         }
     }
+    hit_er.clear();
 }

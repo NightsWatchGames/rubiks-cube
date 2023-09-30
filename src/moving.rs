@@ -1,7 +1,8 @@
 use crate::cube::*;
 use bevy::prelude::*;
-use bevy_mod_picking::PickingEvent;
-use bevy_mod_raycast::Intersection;
+use bevy_mod_picking::backend::PointerHits;
+use bevy_mod_picking::prelude::*;
+use bevy_mod_raycast::prelude::*;
 use std::collections::VecDeque;
 use std::f32::consts::FRAC_PI_2;
 use std::f32::consts::PI;
@@ -24,7 +25,7 @@ pub enum Axis {
     Z,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Event)]
 pub struct SideMoveEvent {
     // 旋转的面，对应固定的x/y/z坐标值
     pub side: (Axis, f32),
@@ -48,6 +49,7 @@ impl MouseDraggingRecorder {
     }
 }
 
+#[derive(Reflect)]
 pub struct MyRaycastSet;
 
 pub fn choose_movable_pieces(
@@ -192,63 +194,72 @@ pub fn rotate_cube(
     }
 }
 
-pub fn mouse_dragging(
+pub fn handle_drag_start(
+    event: Listener<Pointer<DragStart>>,
     mut recorder: ResMut<MouseDraggingRecorder>,
-    mouse: Res<Input<MouseButton>>,
-    mut picking_events: EventReader<PickingEvent>,
-    mut side_move_queue: ResMut<SideMoveQueue>,
-    q_pieces: Query<&Transform, With<Piece>>,
-    q_intersection: Query<&Intersection<MyRaycastSet>>,
+    mut hit_er: EventReader<PointerHits>,
 ) {
-    if mouse.just_pressed(MouseButton::Left) {
-        // recorder开始记录
-        if let Some(event) = picking_events
-            .iter()
-            .filter(|e| match e {
-                PickingEvent::Clicked(_) => true,
-                _ => false,
-            })
-            .last()
-        {
-            let piece_entity = match event {
-                PickingEvent::Clicked(entity) => entity,
-                _ => {
-                    unreachable!();
+    // recorder开始记录
+    println!("drag start event: {:?}", event);
+    let piece_entity = event.target;
+    recorder.piece = Some(piece_entity.clone());
+
+    let mut hit_pos = None;
+    for hit in hit_er.iter() {
+        if !hit.picks.is_empty() {
+            for pick in &hit.picks {
+                if pick.0 == piece_entity && pick.1.position.is_some() {
+                    hit_pos = Some(pick.1.position.unwrap());
                 }
-            };
-            recorder.piece = Some(piece_entity.clone());
-
-            if let Some(intersection) = q_intersection.iter().last() {
-                recorder.start_pos = Some(intersection.position().unwrap().clone());
-            } else {
-                panic!("Can not get start pos");
             }
-
-            info!("MouseDraggingRecorder started {:?}", recorder);
         }
     }
+    hit_er.clear();
 
+    if let Some(hit_pos) = hit_pos {
+        recorder.start_pos = Some(hit_pos);
+    } else {
+        panic!("Can not get start pos");
+    }
+
+    info!("MouseDraggingRecorder started {:?}", recorder);
+}
+
+pub fn handle_drag_end(mut recorder: ResMut<MouseDraggingRecorder>) {
+    println!("drag end event");
+    recorder.clear();
+}
+
+// 当鼠标拖动距离超过临界值时，触发一个面旋转
+pub fn trigger_side_move(
+    mut recorder: ResMut<MouseDraggingRecorder>,
+    mouse: Res<Input<MouseButton>>,
+    mut side_move_queue: ResMut<SideMoveQueue>,
+    q_pieces: Query<&Transform, With<Piece>>,
+    mut hit_er: EventReader<PointerHits>,
+) {
     if mouse.pressed(MouseButton::Left) {
         if recorder.start_pos.is_some() && recorder.piece.is_some() {
-            if let Some(intersection) = q_intersection.iter().last() {
+            let mut hit_pos = None;
+            for hit in hit_er.iter() {
+                if !hit.picks.is_empty() {
+                    for pick in &hit.picks {
+                        if &pick.0 == recorder.piece.as_ref().unwrap() && pick.1.position.is_some()
+                        {
+                            hit_pos = Some(pick.1.position.unwrap());
+                        }
+                    }
+                }
+            }
+            hit_er.clear();
+            if let Some(hit_pos) = hit_pos {
                 // 鼠标拽动距离超过临界值
-                if recorder
-                    .start_pos
-                    .unwrap()
-                    .distance(intersection.position().unwrap().clone())
-                    > 0.5
-                {
+                if recorder.start_pos.unwrap().distance(hit_pos) > 0.5 {
                     // 触发旋转
-                    info!(
-                        "Trigger side move event, end_pos: {:?}",
-                        &intersection.position()
-                    );
+                    info!("Trigger side move event, end_pos: {:?}", hit_pos);
                     let translation = q_pieces.get(recorder.piece.unwrap()).unwrap().translation;
-                    let event = gen_side_move_event(
-                        translation,
-                        recorder.start_pos.unwrap(),
-                        intersection.position().unwrap().clone(),
-                    );
+                    let event =
+                        gen_side_move_event(translation, recorder.start_pos.unwrap(), hit_pos);
                     info!("gen event: {:?}", event);
                     if event.is_some() {
                         side_move_queue.0.push_back(event.unwrap());
@@ -257,15 +268,8 @@ pub fn mouse_dragging(
                     // 清除recorder
                     recorder.clear();
                 }
-            } else {
-                panic!("Can not get end pos");
             }
         }
-    }
-
-    if mouse.just_released(MouseButton::Left) {
-        // 清除recorder
-        recorder.clear();
     }
 }
 

@@ -1,15 +1,14 @@
-use crate::{cube::*, moving::SideMoveQueue};
+use crate::cube::*;
 use bevy::prelude::*;
 use bevy::utils::Instant;
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{egui, EguiContexts};
 
 #[derive(Debug, Resource)]
 pub struct TimekeepingTimer(pub Instant);
 
 pub fn game_ui(
-    mut egui_context: ResMut<EguiContext>,
+    mut egui_context: EguiContexts,
     mut cube_settings: ResMut<CubeSettings>,
-    mut move_seq: ResMut<SideMoveQueue>,
     mut timekeeping_timer: ResMut<TimekeepingTimer>,
     mut scramble_event: EventWriter<ScrambleEvent>,
     mut reset_event: EventWriter<ResetEvent>,
