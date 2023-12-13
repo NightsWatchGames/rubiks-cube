@@ -7,7 +7,6 @@ use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use bevy_mod_picking::backend::PointerHits;
 use bevy_mod_picking::prelude::*;
-use bevy_mod_raycast::RaycastSource;
 
 pub fn setup_camera(mut commands: Commands) {
     // camera
@@ -16,8 +15,7 @@ pub fn setup_camera(mut commands: Commands) {
             transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         })
-        .insert(RaycastPickCamera::default())
-        .insert(RaycastSource::<MyRaycastSet>::new());
+        .insert(RaycastPickCamera::default());
 }
 
 // TODO 平滑放大缩小 参考 https://github.com/cart/card_combinator/blob/main/src/game/camera.rs

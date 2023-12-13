@@ -3,7 +3,6 @@ use bevy::transform::TransformSystem;
 use bevy::utils::Instant;
 use bevy_egui::EguiPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
-use bevy_mod_raycast::DefaultRaycastingPlugin;
 use std::collections::VecDeque;
 
 use camera::*;
@@ -23,7 +22,6 @@ fn main() {
         .add_plugins(DefaultPickingPlugins)
         // .add_plugin(DebugCursorPickingPlugin)
         // .add_plugin(DebugEventsPickingPlugin)
-        .add_plugins(DefaultRaycastingPlugin::<MyRaycastSet>::default())
         .add_systems(Startup, (setup_camera, setup_cube))
         .insert_resource(CubeSettings::default())
         .insert_resource(SideMoveQueue(VecDeque::new()))

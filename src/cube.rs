@@ -1,14 +1,12 @@
 use crate::moving::{self, *};
 use bevy::prelude::*;
 use bevy_mod_picking::events::Move;
-use bevy_mod_picking::prelude::Drag;
 use bevy_mod_picking::prelude::DragEnd;
 use bevy_mod_picking::prelude::DragStart;
 use bevy_mod_picking::prelude::On;
 use bevy_mod_picking::prelude::Pointer;
 use bevy_mod_picking::prelude::RaycastPickTarget;
 use bevy_mod_picking::PickableBundle;
-use bevy_mod_raycast::RaycastMesh;
 use rand::seq::SliceRandom;
 use rand::Rng;
 use std::f32::consts::FRAC_PI_2;
@@ -160,7 +158,7 @@ fn create_cube(
                     .insert(piece)
                     .insert(PickableBundle::default())
                     .insert(RaycastPickTarget::default())
-                    .insert(RaycastMesh::<MyRaycastSet>::default())
+                    // .insert(RaycastMesh::<MyRaycastSet>::default())
                     .insert(On::<Pointer<DragStart>>::run(handle_drag_start))
                     .insert(On::<Pointer<Move>>::run(handle_move))
                     .insert(On::<Pointer<DragEnd>>::run(handle_drag_end))
