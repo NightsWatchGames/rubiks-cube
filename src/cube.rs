@@ -1,5 +1,6 @@
 use crate::moving::{self, *};
 use bevy::prelude::*;
+use bevy_mod_picking::events::Move;
 use bevy_mod_picking::prelude::Drag;
 use bevy_mod_picking::prelude::DragEnd;
 use bevy_mod_picking::prelude::DragStart;
@@ -161,18 +162,18 @@ fn create_cube(
                     .insert(RaycastPickTarget::default())
                     .insert(RaycastMesh::<MyRaycastSet>::default())
                     .insert(On::<Pointer<DragStart>>::run(handle_drag_start))
-                    .insert(On::<Pointer<Drag>>::run(trigger_side_move))
+                    .insert(On::<Pointer<Move>>::run(handle_move))
                     .insert(On::<Pointer<DragEnd>>::run(handle_drag_end))
                     .with_children(|parent| {
                         // 外部贴纸
-                        spwan_stickers(parent, piece, meshes, materials, cube_settings);
+                        spawn_stickers(parent, piece, meshes, materials, cube_settings);
                     });
             }
         }
     }
 }
 
-fn spwan_stickers(
+fn spawn_stickers(
     parent: &mut ChildBuilder,
     piece: Piece,
     meshes: &mut ResMut<Assets<Mesh>>,

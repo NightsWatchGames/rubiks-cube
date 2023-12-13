@@ -50,13 +50,11 @@ fn main() {
         )
         .add_systems(
             PostUpdate,
-            (
-                (
-                    piece_translation_round,
-                    cleanup_movable_pieces.after(piece_translation_round),
-                )
-                    .after(TransformSystem::TransformPropagate),
-            ),
+            ((
+                piece_translation_round,
+                cleanup_movable_pieces.after(piece_translation_round),
+            )
+                .after(TransformSystem::TransformPropagate),),
         )
         .run();
 }
