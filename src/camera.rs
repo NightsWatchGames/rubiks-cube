@@ -5,7 +5,7 @@ use crate::moving::*;
 use bevy::input::mouse::MouseMotion;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
-use bevy_mod_picking::backend::PointerHits;
+use bevy_mod_picking::backends::raycast::RaycastPickable;
 use bevy_mod_picking::prelude::*;
 
 pub fn setup_camera(mut commands: Commands) {
@@ -15,7 +15,7 @@ pub fn setup_camera(mut commands: Commands) {
             transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         })
-        .insert(RaycastPickCamera::default());
+        .insert(RaycastPickable::default());
 }
 
 // TODO 平滑放大缩小 参考 https://github.com/cart/card_combinator/blob/main/src/game/camera.rs
@@ -73,8 +73,8 @@ pub fn move_camera(
 ) {
     if buttons.pressed(MouseButton::Left) {
         if recorder.piece.is_none() || recorder.start_pos.is_none() {
-            println!("move camera");
-            for motion in motion_evr.iter() {
+            // println!("move camera");
+            for motion in motion_evr.read() {
                 // motion.delta.x 鼠标左滑为负、右滑为正
                 // motion.delta.y 鼠标上滑为负、下滑为正
                 for mut transform in &mut q_camera {
@@ -109,4 +109,5 @@ pub fn move_camera(
             }
         }
     }
+    motion_evr.clear();
 }
