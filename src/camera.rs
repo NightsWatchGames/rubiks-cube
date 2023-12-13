@@ -69,11 +69,10 @@ pub fn move_camera(
     mut q_camera: Query<&mut Transform, With<Camera>>,
     mut motion_evr: EventReader<MouseMotion>,
     buttons: Res<Input<MouseButton>>,
-    mut hit_er: EventReader<PointerHits>,
+    recorder: Res<MouseDraggingRecorder>,
 ) {
-    println!("hit_er: {:?}", hit_er.iter().last());
     if buttons.pressed(MouseButton::Left) {
-        if hit_er.is_empty() || hit_er.iter().last().unwrap().picks.is_empty() {
+        if recorder.piece.is_none() || recorder.start_pos.is_none() {
             println!("move camera");
             for motion in motion_evr.iter() {
                 // motion.delta.x 鼠标左滑为负、右滑为正
@@ -110,5 +109,4 @@ pub fn move_camera(
             }
         }
     }
-    hit_er.clear();
 }

@@ -42,8 +42,7 @@ fn main() {
                 scramble_cube,
                 reset_cube,
                 zoom_camera,
-                // FIXME
-                // move_camera
+                move_camera,
             ),
         )
         .add_systems(
