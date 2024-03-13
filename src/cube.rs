@@ -94,29 +94,6 @@ impl Default for CubeSettings {
     }
 }
 
-impl CubeSettings {
-    // 魔方整体坐标的边界值（正数）
-    pub fn coordinate_boundary(&self) -> f32 {
-        (self.cube_order as f32 / 2.0) * self.piece_size
-    }
-}
-
-#[derive(Debug, Component)]
-pub enum Face {
-    // 上面
-    U,
-    // 下面
-    D,
-    // 左面
-    L,
-    // 右面
-    R,
-    // 前面
-    F,
-    // 后面
-    B,
-}
-
 // 重置魔方
 #[derive(Debug, Default, Event)]
 pub struct ResetEvent;
@@ -150,8 +127,8 @@ fn create_cube(
                 };
                 commands
                     .spawn(PbrBundle {
-                        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-                        material: materials.add(Color::BLACK.into()),
+                        mesh: meshes.add(Cuboid::new(1.0, 1.0, 1.0).mesh()),
+                        material: materials.add(Color::BLACK),
                         transform: Transform::from_translation(Vec3::new(x, y, z)),
                         ..default()
                     })
@@ -183,16 +160,13 @@ fn spawn_stickers(
         let transform =
             Transform::from_translation(Vec3::new(0.0, 0.5 * cube_settings.piece_size + 0.01, 0.0));
         parent.spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane {
-                size: sticker_size,
-                subdivisions: 0,
-            })),
+            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
             material: materials.add(StandardMaterial {
                 base_color: cube_settings.up_color,
                 unlit: true,
                 ..default()
             }),
-            transform: transform,
+            transform,
             ..Default::default()
         });
     }
@@ -205,16 +179,13 @@ fn spawn_stickers(
         ));
         transform.rotate_x(PI);
         parent.spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane {
-                size: sticker_size,
-                subdivisions: 0,
-            })),
+            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
             material: materials.add(StandardMaterial {
                 base_color: cube_settings.down_color,
                 unlit: true,
                 ..default()
             }),
-            transform: transform,
+            transform,
             ..Default::default()
         });
     }
@@ -226,16 +197,13 @@ fn spawn_stickers(
         ));
         transform.rotate_z(FRAC_PI_2);
         parent.spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane {
-                size: sticker_size,
-                subdivisions: 0,
-            })),
+            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
             material: materials.add(StandardMaterial {
                 base_color: cube_settings.left_color,
                 unlit: true,
                 ..default()
             }),
-            transform: transform,
+            transform,
             ..Default::default()
         });
     }
@@ -245,16 +213,13 @@ fn spawn_stickers(
             Transform::from_translation(Vec3::new(0.5 * cube_settings.piece_size + 0.01, 0.0, 0.0));
         transform.rotate_z(-FRAC_PI_2);
         parent.spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane {
-                size: sticker_size,
-                subdivisions: 0,
-            })),
+            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
             material: materials.add(StandardMaterial {
                 base_color: cube_settings.right_color,
                 unlit: true,
                 ..default()
             }),
-            transform: transform,
+            transform,
             ..Default::default()
         });
     }
@@ -264,16 +229,13 @@ fn spawn_stickers(
             Transform::from_translation(Vec3::new(0.0, 0.0, 0.5 * cube_settings.piece_size + 0.01));
         transform.rotate_x(FRAC_PI_2);
         parent.spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane {
-                size: sticker_size,
-                subdivisions: 0,
-            })),
+            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
             material: materials.add(StandardMaterial {
                 base_color: cube_settings.front_color,
                 unlit: true,
                 ..default()
             }),
-            transform: transform,
+            transform,
             ..Default::default()
         });
     }
@@ -286,16 +248,13 @@ fn spawn_stickers(
         ));
         transform.rotate_x(-FRAC_PI_2);
         parent.spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane {
-                size: sticker_size,
-                subdivisions: 0,
-            })),
+            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
             material: materials.add(StandardMaterial {
                 base_color: cube_settings.back_color,
                 unlit: true,
                 ..default()
             }),
-            transform: transform,
+            transform,
             ..Default::default()
         });
     }
@@ -309,7 +268,7 @@ pub fn reset_cube(
     mut events: EventReader<ResetEvent>,
     q_pieces: Query<Entity, With<Piece>>,
 ) {
-    for _ in events.iter() {
+    for _ in events.read() {
         // 移除原有魔方
         for piece in &q_pieces {
             commands.entity(piece).despawn_recursive();
@@ -323,7 +282,7 @@ pub fn scramble_cube(
     mut events: EventReader<ScrambleEvent>,
     mut side_move_queue: ResMut<SideMoveQueue>,
 ) {
-    for _ in events.iter() {
+    for _ in events.read() {
         for _ in 0..5 {
             let axis_value = vec![-1.0f32, 0.0, 1.0]
                 .choose(&mut rand::thread_rng())

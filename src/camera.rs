@@ -6,7 +6,6 @@ use bevy::input::mouse::MouseMotion;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 use bevy_mod_picking::backends::raycast::RaycastPickable;
-use bevy_mod_picking::prelude::*;
 
 pub fn setup_camera(mut commands: Commands) {
     // camera
@@ -24,7 +23,7 @@ pub fn zoom_camera(
     mut q_camera: Query<&mut Transform, With<Camera>>,
     cube_settings: Res<CubeSettings>,
 ) {
-    for ev in scroll_evr.iter() {
+    for ev in scroll_evr.read() {
         let mut transform = q_camera.single_mut();
         match ev.unit {
             MouseScrollUnit::Line => {
@@ -68,7 +67,7 @@ pub fn zoom_camera(
 pub fn move_camera(
     mut q_camera: Query<&mut Transform, With<Camera>>,
     mut motion_evr: EventReader<MouseMotion>,
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
     recorder: Res<MouseDraggingRecorder>,
 ) {
     if buttons.pressed(MouseButton::Left) {

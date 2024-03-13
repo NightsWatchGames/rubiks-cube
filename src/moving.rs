@@ -10,10 +10,7 @@ use std::f32::consts::TAU;
 pub enum SideRotation {
     Clockwise90,
     Clockwise180,
-    Clockwise270,
     Counterclockwise90,
-    Counterclockwise180,
-    Counterclockwise270,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -47,9 +44,6 @@ impl MouseDraggingRecorder {
     }
 }
 
-#[derive(Reflect)]
-pub struct MyRaycastSet;
-
 pub fn choose_movable_pieces(
     mut commands: Commands,
     mut q_pieces: Query<(Entity, &Transform), With<Piece>>,
@@ -73,10 +67,7 @@ pub fn choose_movable_pieces(
         let left_angle = match event.rotate {
             SideRotation::Clockwise90 => FRAC_PI_2,
             SideRotation::Clockwise180 => PI,
-            SideRotation::Clockwise270 => 3.0 * PI / 2.0,
             SideRotation::Counterclockwise90 => -FRAC_PI_2,
-            SideRotation::Counterclockwise180 => -PI,
-            SideRotation::Counterclockwise270 => -3.0 * PI / 2.0,
         };
 
         let side = event.side;
@@ -159,27 +150,23 @@ pub fn rotate_cube(
             Axis::Z => Vec3::Z,
         };
         let mut angle = match movable_piece.rotate {
-            SideRotation::Clockwise90 | SideRotation::Clockwise180 | SideRotation::Clockwise270 => {
+            SideRotation::Clockwise90 | SideRotation::Clockwise180 => {
                 cube_settings.rotate_speed * TAU * time.delta_seconds()
             }
-            SideRotation::Counterclockwise90
-            | SideRotation::Counterclockwise180
-            | SideRotation::Counterclockwise270 => {
+            SideRotation::Counterclockwise90 => {
                 -cube_settings.rotate_speed * TAU * time.delta_seconds()
             }
         };
 
         let mut new_left_angle = movable_piece.left_angle - angle;
         match movable_piece.rotate {
-            SideRotation::Clockwise90 | SideRotation::Clockwise180 | SideRotation::Clockwise270 => {
+            SideRotation::Clockwise90 | SideRotation::Clockwise180 => {
                 if new_left_angle < 0.0 {
                     angle = movable_piece.left_angle;
                     new_left_angle = 0.0;
                 }
             }
-            SideRotation::Counterclockwise90
-            | SideRotation::Counterclockwise180
-            | SideRotation::Counterclockwise270 => {
+            SideRotation::Counterclockwise90 => {
                 if new_left_angle > 0.0 {
                     angle = movable_piece.left_angle;
                     new_left_angle = 0.0;
