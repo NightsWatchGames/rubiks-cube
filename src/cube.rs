@@ -1,4 +1,5 @@
 use crate::moving::{self, *};
+use bevy::color::palettes;
 use bevy::prelude::*;
 use bevy_mod_picking::backends::raycast::RaycastPickable;
 use bevy_mod_picking::events::Move;
@@ -58,8 +59,6 @@ pub enum PlayMode {
 /// 魔方设置
 #[derive(Debug, Resource)]
 pub struct CubeSettings {
-    // 几阶魔方
-    pub cube_order: u8,
     // 块大小
     pub piece_size: f32,
     // 旋转速度
@@ -79,15 +78,14 @@ pub struct CubeSettings {
 impl Default for CubeSettings {
     fn default() -> Self {
         Self {
-            cube_order: 3,
             piece_size: 1.0,
             rotate_speed: 1.0,
-            front_color: Color::GREEN,
-            back_color: Color::BLUE,
-            left_color: Color::ORANGE,
-            right_color: Color::RED,
-            up_color: Color::WHITE,
-            down_color: Color::YELLOW,
+            front_color: palettes::css::GREEN.into(),
+            back_color: palettes::css::BLUE.into(),
+            left_color: palettes::css::ORANGE.into(),
+            right_color: palettes::css::RED.into(),
+            up_color: palettes::css::WHITE.into(),
+            down_color: palettes::css::YELLOW.into(),
             play_mode: PlayMode::Practice,
             camera_zoom_speed: 1.01,
         }

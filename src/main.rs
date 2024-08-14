@@ -34,6 +34,7 @@ fn main() {
         .insert_resource(MouseDraggingRecorder {
             start_pos: None,
             piece: None,
+            triggered: false,
         })
         .insert_resource(TimekeepingTimer(Instant::now()))
         .register_type::<Piece>()

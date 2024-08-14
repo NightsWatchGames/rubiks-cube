@@ -35,12 +35,14 @@ pub struct SideMoveQueue(pub VecDeque<SideMoveEvent>);
 pub struct MouseDraggingRecorder {
     pub start_pos: Option<Vec3>,
     pub piece: Option<Entity>,
+    pub triggered: bool,
 }
 
 impl MouseDraggingRecorder {
     pub fn clear(&mut self) {
         self.start_pos = None;
         self.piece = None;
+        self.triggered = false;
     }
 }
 
@@ -184,7 +186,7 @@ pub fn handle_drag_start(
     mut recorder: ResMut<MouseDraggingRecorder>,
 ) {
     // recorder开始记录
-    println!("drag start event: {:?}", listener);
+    info!("drag start event: {:?}", listener);
     let piece_entity = listener.target;
     recorder.piece = Some(piece_entity.clone());
     recorder.start_pos = listener.hit.position;
@@ -204,7 +206,7 @@ pub fn handle_move(
         let current_pos = listener.event.hit.position.unwrap();
 
         // 鼠标拽动距离超过临界值
-        if start_pos.distance(current_pos) > 0.5 {
+        if start_pos.distance(current_pos) > 0.5 && !recorder.triggered {
             // 触发旋转
             info!("Trigger side move event, end_pos: {:?}", current_pos);
             let translation = q_pieces.get(recorder.piece.unwrap()).unwrap().translation;
@@ -214,8 +216,8 @@ pub fn handle_move(
                 side_move_queue.0.push_back(event.unwrap());
             }
 
-            // 清除recorder
-            recorder.clear();
+            // 更新recorder
+            recorder.triggered = true;
         }
     }
 }
