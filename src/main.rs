@@ -2,9 +2,6 @@ use bevy::prelude::*;
 use bevy::transform::TransformSystem;
 use bevy::utils::Instant;
 use bevy_egui::EguiPlugin;
-use bevy_mod_picking::backends::raycast::bevy_mod_raycast::prelude::RaycastVisibility;
-use bevy_mod_picking::backends::raycast::RaycastBackendSettings;
-use bevy_mod_picking::DefaultPickingPlugins;
 use std::collections::VecDeque;
 
 use camera::*;
@@ -19,16 +16,13 @@ mod ui;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins((DefaultPlugins, MeshPickingPlugin))
         .add_plugins(EguiPlugin)
-        .add_plugins(DefaultPickingPlugins)
-        // .add_plugin(DebugCursorPickingPlugin)
-        // .add_plugin(DebugEventsPickingPlugin)
-        .add_systems(Startup, (setup_camera, setup_cube))
-        .insert_resource(RaycastBackendSettings {
+        .insert_resource(MeshPickingSettings {
             require_markers: true,
-            raycast_visibility: RaycastVisibility::MustBeVisible,
+            ..Default::default()
         })
+        .add_systems(Startup, (setup_camera, setup_cube))
         .insert_resource(CubeSettings::default())
         .insert_resource(SideMoveQueue(VecDeque::new()))
         .insert_resource(MouseDraggingRecorder {

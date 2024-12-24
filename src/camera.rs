@@ -5,16 +5,14 @@ use crate::moving::*;
 use bevy::input::mouse::MouseMotion;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
-use bevy_mod_picking::backends::raycast::RaycastPickable;
 
 pub fn setup_camera(mut commands: Commands) {
     // camera
-    commands
-        .spawn(Camera3dBundle {
-            transform: Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-            ..default()
-        })
-        .insert(RaycastPickable::default());
+    commands.spawn((
+        Camera3d::default(),
+        Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        RayCastPickable,
+    ));
 }
 
 // TODO 平滑放大缩小 参考 https://github.com/cart/card_combinator/blob/main/src/game/camera.rs

@@ -1,6 +1,5 @@
 use crate::cube::*;
 use bevy::prelude::*;
-use bevy_mod_picking::prelude::*;
 use std::collections::VecDeque;
 use std::f32::consts::FRAC_PI_2;
 use std::f32::consts::PI;
@@ -153,10 +152,10 @@ pub fn rotate_cube(
         };
         let mut angle = match movable_piece.rotate {
             SideRotation::Clockwise90 | SideRotation::Clockwise180 => {
-                cube_settings.rotate_speed * TAU * time.delta_seconds()
+                cube_settings.rotate_speed * TAU * time.delta_secs()
             }
             SideRotation::Counterclockwise90 => {
-                -cube_settings.rotate_speed * TAU * time.delta_seconds()
+                -cube_settings.rotate_speed * TAU * time.delta_secs()
             }
         };
 
@@ -182,28 +181,28 @@ pub fn rotate_cube(
 }
 
 pub fn handle_drag_start(
-    listener: Listener<Pointer<DragStart>>,
+    drag_start: Trigger<Pointer<DragStart>>,
     mut recorder: ResMut<MouseDraggingRecorder>,
 ) {
     // recorder开始记录
-    info!("drag start event: {:?}", listener);
-    let piece_entity = listener.target;
+    info!("drag start event: {:?}", drag_start);
+    let piece_entity = drag_start.target;
     recorder.piece = Some(piece_entity.clone());
-    recorder.start_pos = listener.hit.position;
+    recorder.start_pos = drag_start.hit.position;
 
     info!("MouseDraggingRecorder started {:?}", recorder);
 }
 
 // 监测鼠标拖动距离，当鼠标拖动距离超过临界值时，触发一个面旋转
 pub fn handle_move(
-    listener: Listener<Pointer<Move>>,
+    pointer_move: Trigger<Pointer<Move>>,
     mut recorder: ResMut<MouseDraggingRecorder>,
     mut side_move_queue: ResMut<SideMoveQueue>,
     q_pieces: Query<&Transform, With<Piece>>,
 ) {
-    if listener.event.hit.position.is_some() && recorder.start_pos.is_some() {
+    if pointer_move.event.hit.position.is_some() && recorder.start_pos.is_some() {
         let start_pos = recorder.start_pos.unwrap();
-        let current_pos = listener.event.hit.position.unwrap();
+        let current_pos = pointer_move.event.hit.position.unwrap();
 
         // 鼠标拽动距离超过临界值
         if start_pos.distance(current_pos) > 0.5 && !recorder.triggered {
@@ -222,7 +221,10 @@ pub fn handle_move(
     }
 }
 
-pub fn handle_drag_end(mut recorder: ResMut<MouseDraggingRecorder>) {
+pub fn handle_drag_end(
+    _drag_end: Trigger<Pointer<DragEnd>>,
+    mut recorder: ResMut<MouseDraggingRecorder>,
+) {
     println!("drag end event");
     recorder.clear();
 }

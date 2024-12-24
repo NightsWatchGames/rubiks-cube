@@ -1,13 +1,6 @@
 use crate::moving::{self, *};
 use bevy::color::palettes;
 use bevy::prelude::*;
-use bevy_mod_picking::backends::raycast::RaycastPickable;
-use bevy_mod_picking::events::Move;
-use bevy_mod_picking::prelude::DragEnd;
-use bevy_mod_picking::prelude::DragStart;
-use bevy_mod_picking::prelude::On;
-use bevy_mod_picking::prelude::Pointer;
-use bevy_mod_picking::PickableBundle;
 use rand::seq::SliceRandom;
 use rand::Rng;
 use std::f32::consts::FRAC_PI_2;
@@ -124,18 +117,16 @@ fn create_cube(
                     size: cube_settings.piece_size,
                 };
                 commands
-                    .spawn(PbrBundle {
-                        mesh: meshes.add(Cuboid::new(1.0, 1.0, 1.0).mesh()),
-                        material: materials.add(Color::BLACK),
-                        transform: Transform::from_translation(Vec3::new(x, y, z)),
-                        ..default()
-                    })
-                    .insert(piece)
-                    .insert(PickableBundle::default())
-                    .insert(RaycastPickable::default())
-                    .insert(On::<Pointer<DragStart>>::run(handle_drag_start))
-                    .insert(On::<Pointer<Move>>::run(handle_move))
-                    .insert(On::<Pointer<DragEnd>>::run(handle_drag_end))
+                    .spawn((
+                        Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0).mesh())),
+                        MeshMaterial3d(materials.add(Color::BLACK)),
+                        Transform::from_translation(Vec3::new(x, y, z)),
+                        piece,
+                        RayCastPickable,
+                    ))
+                    .observe(handle_drag_start)
+                    .observe(handle_move)
+                    .observe(handle_drag_end)
                     .with_children(|parent| {
                         // 外部贴纸
                         spawn_stickers(parent, piece, meshes, materials, cube_settings);
@@ -157,16 +148,15 @@ fn spawn_stickers(
     if piece.has_up_face() {
         let transform =
             Transform::from_translation(Vec3::new(0.0, 0.5 * cube_settings.piece_size + 0.01, 0.0));
-        parent.spawn(PbrBundle {
-            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
-            material: materials.add(StandardMaterial {
+        parent.spawn((
+            Mesh3d(meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh())),
+            MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: cube_settings.up_color,
                 unlit: true,
                 ..default()
-            }),
+            })),
             transform,
-            ..Default::default()
-        });
+        ));
     }
 
     if piece.has_down_face() {
@@ -176,16 +166,15 @@ fn spawn_stickers(
             0.0,
         ));
         transform.rotate_x(PI);
-        parent.spawn(PbrBundle {
-            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
-            material: materials.add(StandardMaterial {
+        parent.spawn((
+            Mesh3d(meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh())),
+            MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: cube_settings.down_color,
                 unlit: true,
                 ..default()
-            }),
+            })),
             transform,
-            ..Default::default()
-        });
+        ));
     }
     if piece.has_left_face() {
         let mut transform = Transform::from_translation(Vec3::new(
@@ -194,48 +183,45 @@ fn spawn_stickers(
             0.0,
         ));
         transform.rotate_z(FRAC_PI_2);
-        parent.spawn(PbrBundle {
-            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
-            material: materials.add(StandardMaterial {
+        parent.spawn((
+            Mesh3d(meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh())),
+            MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: cube_settings.left_color,
                 unlit: true,
                 ..default()
-            }),
+            })),
             transform,
-            ..Default::default()
-        });
+        ));
     }
 
     if piece.has_right_face() {
         let mut transform =
             Transform::from_translation(Vec3::new(0.5 * cube_settings.piece_size + 0.01, 0.0, 0.0));
         transform.rotate_z(-FRAC_PI_2);
-        parent.spawn(PbrBundle {
-            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
-            material: materials.add(StandardMaterial {
+        parent.spawn((
+            Mesh3d(meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh())),
+            MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: cube_settings.right_color,
                 unlit: true,
                 ..default()
-            }),
+            })),
             transform,
-            ..Default::default()
-        });
+        ));
     }
 
     if piece.has_front_face() {
         let mut transform =
             Transform::from_translation(Vec3::new(0.0, 0.0, 0.5 * cube_settings.piece_size + 0.01));
         transform.rotate_x(FRAC_PI_2);
-        parent.spawn(PbrBundle {
-            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
-            material: materials.add(StandardMaterial {
+        parent.spawn((
+            Mesh3d(meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh())),
+            MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: cube_settings.front_color,
                 unlit: true,
                 ..default()
-            }),
+            })),
             transform,
-            ..Default::default()
-        });
+        ));
     }
 
     if piece.has_back_face() {
@@ -245,16 +231,15 @@ fn spawn_stickers(
             -0.5 * cube_settings.piece_size - 0.01,
         ));
         transform.rotate_x(-FRAC_PI_2);
-        parent.spawn(PbrBundle {
-            mesh: meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh()),
-            material: materials.add(StandardMaterial {
+        parent.spawn((
+            Mesh3d(meshes.add(Cuboid::new(sticker_size, 0.01, sticker_size).mesh())),
+            MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: cube_settings.back_color,
                 unlit: true,
                 ..default()
-            }),
+            })),
             transform,
-            ..Default::default()
-        });
+        ));
     }
 }
 
